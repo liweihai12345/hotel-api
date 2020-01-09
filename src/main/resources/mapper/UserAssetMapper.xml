@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.UserAssetMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.UserAssetDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="userName" column="user_name"/>
+        <result property="amount" column="amount"/>
+        <result property="frozen" column="frozen"/>
+        <result property="coin" column="coin"/>
+        <result property="coinFrozen" column="coin_frozen"/>
+        <result property="kilometer" column="kilometer"/>
+        <result property="kilometerExtra" column="kilometer_extra"/>
+        <result property="kilometerReal" column="kilometer_real"/>
+        <result property="spcCoinFrozen" column="spc_coin_frozen"/>
+        <result property="spcCoin" column="spc_coin"/>
+        <result property="backRate" column="back_rate"/>
+        <result property="createDate" column="create_date"/>
+        <result property="version" column="version"/>
+    </resultMap>
+
+
+    <select id="selectTotalAsset" resultMap="resultMap">
+		select id,uid,phone,user_name,amount,frozen,coin,coin_frozen,kilometer,kilometer_extra,kilometer_real,spc_coin_frozen,spc_coin,back_rate,create_date,version
+		 from t_user_asset where uid = #{userId}
+	</select>
+
+    <insert id="save" parameterType="com.platform.entity.UserAssetDO" useGeneratedKeys="true" keyProperty="id">
+		insert into t_user_asset
+		(
+			`uid`,
+			`phone`,
+			`user_name`,
+			coin,
+			version
+		)
+		values
+		(
+			#{uid},
+			#{phone},
+			#{userName},
+			#{coin},
+			#{version}
+		)
+	</insert>
+
+    <update id="updateAccount" parameterType="com.platform.entity.UserAssetDO">
+        update t_user_asset
+        <set>
+            amount = #{amount},
+            frozen = #{frozen},
+            version=version+1
+        </set>
+        where uid = #{uid} and version=#{version}
+    </update>
+    <update id="updateCoinAccount" parameterType="com.platform.entity.UserAssetDO">
+        update t_user_asset
+        <set>
+            coin = #{coin},
+            coin_frozen = #{coinFrozen},
+            kilometer = #{kilometer},
+            kilometer_extra = #{kilometerExtra},
+            kilometer_real = #{kilometerReal},
+            spc_coin_frozen = #{spcCoinFrozen},
+            spc_coin = #{spcCoin},
+            version=version+1
+        </set>
+        where uid = #{uid} and version=#{version}
+    </update>
+
+    <update id="updateKilometer">
+        update t_user_asset
+        <set>
+            kilometer = #{kmCount},
+            kilometer_extra = #{kmExtra},
+            kilometer_real = #{real},
+            version=version+1
+        </set>
+        where uid = #{userId} and version=#{version}
+    </update>
+    <update id="updateUserAsset">
+        update t_user_asset
+        <set>
+            user_name = #{realName}
+        </set>
+        where uid = #{userId}
+    </update>
+    <update id="updateAssetCoin">
+        UPDATE t_user_asset
+        SET coin=coin+coin,
+        coin_frozen=coin_frozen-coin
+        WHERE uid =#{uid}
+    </update>
+    <update id="updateAssetBackRate">
+        UPDATE t_user_asset
+        SET back_rate=#{backRate}
+        WHERE uid =#{uid}
+    </update>
+
+    <select id="selectTotalLock" resultType="java.lang.Long">
+        select id from t_user_asset FOR UPDATE
+    </select>
+    <update id="releaseCoin">
+        UPDATE t_user_asset
+        SET
+        spc_coin = spc_coin + coin * back_rate,
+        coin = coin - coin * back_rate
+    </update>
+
+
+    <!--初始化公里数-->
+    <update id="initAssetKm">
+        update t_user_asset SET
+            kilometer = 0,
+            kilometer_extra = 0,
+            kilometer_real = 0
+    </update>
+
+    <select id="selectTotal" resultType="java.math.BigDecimal">
+        select IFNULL(sum(coin),0) from t_user_asset
+    </select>
+
+    <select id="selectUserAssetForIds" resultType="com.platform.dto.UserAssetDTO">
+        select ta.id, ta.uid, ta.spc_coin AS spcCoin, ta.version,u.isd_one AS done from t_user_asset AS ta INNER JOIN t_partner AS u ON
+        ta.uid=u.id
+        where ta.uid IN
+        <foreach collection="uids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        ORDER BY uid ASC
+        FOR UPDATE ;
+    </select>
+    <update id="updateUserAssetList">
+        UPDATE t_user_asset
+        <trim prefix="set">
+            <trim prefix="spc_coin = case" suffix="end">
+                <foreach collection="list" item="item" index="index">
+                    when id=#{item.id} then #{item.spcCoin}
+                </foreach>
+            </trim>
+        </trim>
+        WHERE id IN
+        <foreach collection="list" item="item" separator="," close=")" open="(">
+            #{item.id}
+        </foreach>
+    </update>
+    <update id="updateSpcBack">
+        UPDATE t_user_asset
+        set spc_coin=spc_coin+#{deposit}
+        WHERE uid IN
+        <foreach collection="list" item="item" separator="," close=")" open="(">
+            #{item}
+        </foreach>
+
+    </update>
+
+    <select id="selectUserEnergyTotal" resultType="java.math.BigDecimal">
+        select IFNULL(sum(coin),0) from t_user_asset where  uid!=1
+    </select>
+    <select id="selectUserHoldTotal" resultType="java.math.BigDecimal">
+        select IFNULL(sum(spc_coin),0) from t_user_asset where  uid!=1
+    </select>
+
+</mapper>

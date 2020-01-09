@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.PositiveEnergyMapper">
+    <resultMap type="com.platform.entity.PositiveEnergyDO" id="resultMap">
+
+        <result property="userId" column="user_id"/>
+        <result property="energyValue" column="energy_value"/>
+        <result property="usableValue" column="usable_value"/>
+        <result property="longValue" column="long_value"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+    <select id="selectUserEnergy" resultMap="resultMap">
+		select * from positive_energy where user_id = #{uid}
+	</select>
+
+
+    <insert id="save" parameterType="com.platform.entity.PositiveEnergyDO" useGeneratedKeys="true" keyProperty="id">
+		insert into positive_energy(
+			`user_id`,
+			`energy_value`,
+			`usable_value`,
+			`long_value`,
+			`create_date`)
+		values(
+			#{userId},
+			#{energyValue},
+			#{usableValue},
+			#{longValue},
+              now())
+	</insert>
+    <update id="update">
+        update positive_energy SET
+            energy_value = #{energyValue},
+            usable_value = #{usableValue},
+            long_value = #{longValue}
+            where user_id = #{userId}
+    </update>
+
+
+    <update id="updateEnergyList">
+        UPDATE positive_energy
+        <trim prefix="set" >
+            <trim prefix="long_value = case" suffix="end">
+                <foreach collection="list" item="item" index="index">
+                    when user_id=#{item.userId} then #{item.longValue}
+                </foreach>
+            </trim>
+        </trim>
+        WHERE user_id IN
+        <foreach collection="list" item="item" separator="," close=")" open="(">
+            #{item.userId}
+        </foreach>
+    </update>
+
+</mapper>

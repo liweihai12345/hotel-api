@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.CommentMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.DynamicCommentDO" id="commentMap">
+        <result property="id" column="id"/>
+        <result property="typeId" column="type_id"/>
+        <result property="valueId" column="value_id"/>
+        <result property="content" column="content"/>
+        <result property="createDate" column="create_date"/>
+        <result property="status" column="status"/>
+        <result property="userId" column="user_id"/>
+    </resultMap>
+
+    <select id="queryObject" resultMap="commentMap">
+		select * from dynamic_comment where id = #{value}
+	</select>
+
+
+
+    <insert id="save" parameterType="com.platform.entity.DynamicCommentDO" useGeneratedKeys="true" keyProperty="id">
+		insert into dynamic_comment
+		(
+			`type_id`, 
+			`value_id`, 
+			`content`,
+			`status`,
+			`scroe`,
+			`user_id`,
+			`see`,
+			`create_date`
+		)
+		values
+		(
+			#{typeId},
+			#{valueId},
+			#{content},
+			#{status},
+			#{scroe},
+			#{userId},
+			0,
+			now()
+		)
+	</insert>
+
+    <update id="updateSee" >
+        update dynamic_comment SET
+        `see` = #{see}
+        where id = #{cid}
+    </update>
+
+    <delete id="delete">
+		delete from dynamic_comment where id = #{value}
+	</delete>
+    <delete id="deleteCommentAll">
+		delete from dynamic_comment where value_id = #{cid}
+	</delete>
+
+    <!--消息 评论极速处理-->
+    <update id="updateCommentById" parameterType="java.util.Map">
+        update dynamic_comment AS c
+        LEFT JOIN user_dynamic AS n ON c.value_id = n.id
+        LEFT JOIN t_partner AS p ON c.user_id = p.id
+        <set>
+            c.see = 1
+        </set>
+        where
+        n.authorid = #{userid}
+        and c.see != 1
+    </update>
+
+
+    <!--添加评论回复-->
+    <insert id="saveReply" parameterType="com.platform.entity.DynamicCommentDO" useGeneratedKeys="true"
+            keyProperty="id">
+      insert into dynamic_comment
+      (
+        `user_id`,
+        `parent_id`,
+        `see`,
+        `content`,
+        `isreply`,
+        `touser_id`,
+        `touser_name`,
+        `value_id`,
+        `type_id`,
+        create_date
+      )
+      values
+      (
+        #{userId},
+        #{parentId},
+        0,
+        #{content},
+        #{isreply},
+        #{touserId},
+        #{touserName},
+        #{valueId},
+        0,
+        now()
+      )
+    </insert>
+
+
+    <delete id="deleteAllids">
+        delete from dynamic_comment where id in
+        <foreach collection="list" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="selectCommentForList" resultType="com.platform.vo.DynamicCommentVO">
+        SELECT	c.id,
+        c.value_id AS  valueId,
+        c.user_id AS userId,
+        p.name,
+        p.picture_url as logo,
+        c.parent_id AS parentId,
+         c.content,
+         c.touser_id AS  touserId,
+         c.touser_name AS  touserName,
+         c.create_date AS  createDate FROM	dynamic_comment  AS c
+        INNER JOIN t_partner AS p ON p.id=c.user_id
+        WHERE value_id=#{newid} AND parent_id=0
+        order by c.id desc
+        limit #{start },#{size}
+    </select>
+
+    <select id="selectCommentListCount" resultType="java.lang.Integer">
+        SELECT	count(1)
+        FROM	dynamic_comment  AS c
+        INNER JOIN t_partner AS p ON p.id=c.user_id
+        WHERE value_id=#{newid} AND parent_id=0
+    </select>
+    <select id="selectCommentAnswer" resultType="com.platform.vo.DynamicCommentVO">
+        SELECT c.id,
+        c.value_id AS valueId,
+        c.user_id AS userId,
+        p.name,
+        c.isreply,
+        c.parent_id AS parentId,
+        c.content,
+        c.touser_id AS touserId,
+        c.touser_name AS touserName,
+        c.create_date AS createDate FROM dynamic_comment AS c
+        INNER JOIN t_partner AS p ON p.id=c.user_id
+        WHERE c.parent_id IN
+        <foreach collection="list" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+        order by c.id desc
+    </select>
+
+    <select id="selectDynamicCommentCount" resultType="com.platform.dto.DynamicCommentDTO">
+        select value_id AS newsid,count(1) AS comments from dynamic_comment AS sc
+        WHERE value_id IN
+        <foreach collection="list" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+        GROUP BY value_id
+    </select>
+
+    <select id="commentNoRead" resultType="java.lang.Integer">
+        select count(1) from dynamic_comment  where see=0 AND parent_id=0 AND value_id  in(SELECT IFNULL(id,0) FROM user_dynamic where authorid=#{userId})
+    </select>
+    <!--消息 回复极速处理-->
+    <update id="readCommentAll" parameterType="java.lang.Long">
+        UPDATE dynamic_comment AS c
+        INNER JOIN user_dynamic AS d ON d.id = c.value_id
+        SET  c.see = 1  where d.authorid = #{userId}
+         AND c.see != 1
+    </update>
+    <!--消息动态新增评论-->
+    <select id="commentListByUid" resultType="com.platform.vo.NoticeCommentVO">
+        SELECT
+		c.id,
+        c.value_id AS  valueId,
+        c.parent_id AS parentId,
+        c.content,
+        c.see,
+        c.touser_id AS  touserId,
+        c.touser_name AS  touserName,
+        c.create_date AS  createDate,
+        c.user_id AS userId,
+        p.name,
+        p.picture_url as logo,
+        d.newdes,
+        d.type,
+        d.image_url AS imageUrl
+        FROM dynamic_comment  AS c
+		INNER JOIN user_dynamic AS d ON c.value_id=d.id
+        INNER JOIN t_partner AS p ON c.user_id=p.id
+        WHERE d.authorid=#{userId} AND parent_id=0
+        order by c.id desc
+        limit #{start},#{size}
+    </select>
+</mapper>

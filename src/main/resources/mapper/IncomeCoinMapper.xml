@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.IncomeCoinMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.IncomeCoinDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="tradeNo" column="trade_no"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="sportCoin" column="sport_coin"/>
+        <result property="distance" column="distance"/>
+        <result property="inviteUid" column="invite_uid"/>
+        <result property="invitePhone" column="invite_phone"/>
+        <result property="inviteName" column="invite_name"/>
+        <result property="inviteLogo" column="invite_logo"/>
+        <result property="type" column="type"/>
+        <result property="statu" column="statu"/>
+        <result property="createdDate" column="created_date"/>
+
+    </resultMap>
+    <resultMap type="com.platform.vo.IncomeListVO" id="voMap">
+        <result property="id" column="id"/>
+        <result property="tradeNo" column="trade_no"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="sportCoin" column="sport_coin"/>
+        <result property="distance" column="distance"/>
+        <result property="inviteUid" column="invite_uid"/>
+        <result property="invitePhone" column="invite_phone"/>
+        <result property="inviteName" column="invite_name"/>
+        <result property="inviteLogo" column="invite_logo"/>
+        <result property="type" column="type"/>
+        <result property="statu" column="statu"/>
+        <result property="createdDate" column="created_date"/>
+
+    </resultMap>
+
+    <select id="queryObject" resultMap="resultMap">
+		select * from t_income_coin where uid = #{uid}
+	</select>
+
+    <select id="queryList" resultMap="voMap">
+        select * from t_income_coin where uid = #{uid}
+        ORDER BY  created_date DESC
+        limit #{index},#{size}
+    </select>
+
+    <select id="queryListRecord" resultMap="voMap">
+        select id,uid,phone,sport_coin,distance,invite_uid,invite_phone,invite_name,type,created_date from t_income_coin where uid = #{uid}
+        ORDER BY  created_date DESC
+        limit #{index},#{size}
+    </select>
+
+    <select id="queryCountRecord" resultMap="resultMap">
+        select *  from t_income_coin
+        where uid = #{uid} and created_date <![CDATA[>]]> #{date}
+        <if test="type != null and type != ''">
+            and type = #{type}
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.platform.entity.IncomeCoinDO" useGeneratedKeys="true" keyProperty="id">
+		insert into t_income_coin
+		(
+			`trade_no`,
+			`uid`,
+			`phone`,
+			`sport_coin`,
+			`distance`,
+			`invite_uid`,
+			`invite_phone`,
+			`type`,
+			`statu`
+		)
+		values
+		(
+            #{tradeNo},
+			#{uid},
+			#{phone},
+			#{sportCoin},
+			#{distance},
+			#{inviteUid},
+			#{invitePhone},
+			#{type},
+			#{statu}
+		)
+	</insert>
+
+    <select id="selectTotalCount" resultType="java.math.BigDecimal">
+        select IFNULL(sum(distance),0)  from t_income_coin c
+        where uid = #{uid} and created_date <![CDATA[>]]> #{date} and type = #{type}
+    </select>
+    <select id="totalDetail" resultType="com.platform.vo.EnergyCoinVO">
+        SELECT IFNULL(sum(energy_coin),0) AS coin,type  from energy_coin GROUP BY type
+
+    </select>
+
+    <!--SPC明细-->
+    <select id="selectIncomeCoinList" resultType="com.platform.vo.EnergyCoinVO">
+        SELECT
+			`id`,
+			`uid`,
+			`phone`,
+			`invite_uid` AS inviteUid,
+			`invite_phone` AS invitePhone,
+			`sport_coin` AS coin,
+			`type`,
+			`invite_name` AS typeStr,
+			`invite_logo` AS image,
+			`created_date` AS createDate
+		FROM
+			t_income_coin
+		where uid = #{uid}
+		and created_date between #{begin} and #{end}
+		order by id desc
+		limit #{start},#{size}
+    </select>
+    <!--SPC明细汇总-->
+    <!--收入-->
+    <select id="selectIncomeCoinInSum" resultType="java.math.BigDecimal">
+        select IFNULL(sum(sport_coin), 0.0) from t_income_coin
+		where uid = #{uid}
+		and type != 8
+		and created_date between #{begin} and #{end}
+    </select>
+
+    <insert id="insertList" parameterType="java.util.ArrayList" useGeneratedKeys="true" keyProperty="id">
+        insert into t_income_coin
+        (
+        `trade_no`,
+        `uid`,
+        `phone`,
+        `sport_coin`,
+        `distance`,
+        `invite_uid`,
+        `invite_phone`,
+        `type`,
+        `statu`
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.tradeNo},
+            #{item.uid},
+            #{item.phone},
+            #{item.sportCoin},
+            #{item.distance},
+            #{item.inviteUid},
+            #{item.invitePhone},
+            11,
+            1
+            )
+
+        </foreach>
+
+    </insert>
+
+    <insert id="insertListForOrder" parameterType="java.util.ArrayList" useGeneratedKeys="true" keyProperty="id">
+        insert into t_income_coin
+        (
+        `trade_no`,
+        `uid`,
+        `phone`,
+        `sport_coin`,
+        `distance`,
+        `invite_uid`,
+        `invite_phone`,
+        `type`,
+        `statu`
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.tradeNo},
+            #{item.uid},
+            #{item.phone},
+            #{item.sportCoin},
+            #{item.distance},
+            #{item.inviteUid},
+            #{item.invitePhone},
+            #{type},
+            1
+            )
+        </foreach>
+    </insert>
+</mapper>

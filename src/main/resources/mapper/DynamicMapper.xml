@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.DynamicMapper">
+
+    <select id="selectDynamicById" resultType="com.platform.entity.UserDynamicDO" parameterType="java.lang.Long">
+        select
+        d.newdes,
+        d.praise,
+        d.type,
+        d.image_url AS imageUrl,
+        d.createdAt AS createdat,
+        d.authorid
+        from user_dynamic AS d
+        where d.id = #{did}
+    </select>
+    <insert id="save" parameterType="com.platform.entity.UserDynamicDO" useGeneratedKeys="true" keyProperty="id">
+        insert into user_dynamic(
+        `authorid`,
+        `isopen`,
+        `comments`,
+        `praise`,
+        `newdes`,
+        `image_url`,
+        `enabled`,
+        `longitude`,
+        `latitude`,
+        `location`,
+        `createdAt`,
+        `isrecommend`,
+        `type`)
+        values(
+        #{authorid},
+        #{isopen},
+        #{comments},
+        #{praise},
+        #{newdes},
+        #{imageUrl},
+        #{enabled},
+        #{longitude},
+        #{latitude},
+        #{location},
+        now(),
+        0,
+        #{type})
+    </insert>
+
+    <!--首页列表-->
+    <select id="selectHomeAuslese" resultType="com.platform.vo.AusleseVO">
+        select c.id AS bid,c.newdes AS content, u.id AS uid,u.`name` AS nickName,u.picture_url AS logo ,
+        IF(sp.id>0,1,0)AS click, c.comments ,IFNULL(c.praise,0)AS praise
+        FROM user_dynamic AS c
+        INNER JOIN t_partner AS u ON u.id=c.authorid
+        LEFT JOIN dynamic_praise AS sp ON c.id=sp.newsid and sp.userid=#{uid}
+        WHERE c.id in
+        <foreach collection="list" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+    </select>
+    <!--动态详情--><!--Html动态分享-->
+    <select id="selectDynamicDetail" parameterType="java.lang.Long" resultType="com.platform.vo.DynamicVO">
+        SELECT c.id ,
+        c.newdes ,
+        c.collect,
+        c.comments,
+        c.type,
+        c.image_url AS imageUrl,
+        IFNULL(c.praise,0) AS praise,
+        p.id AS uid ,
+        p.name ,
+        p.picture_url AS logo,
+        c.createdAt AS createDate,
+        c.longitude,
+        c.latitude,
+        c.location
+		FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+		WHERE c.id =#{newid}
+    </select>
+
+    <!--//用户个人动态-->
+    <select id="selectDynamicList" resultType="com.platform.vo.DynamicVO">
+        SELECT c.id ,
+        c.newdes ,
+        c.type,
+        c.image_url AS imageUrl,
+        IFNULL(c.praise,0)AS praise,
+        p.id AS uid ,
+        p.name ,
+        p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+        WHERE c.authorid=#{userId}
+        <if test="statu!= null and statu!=0">
+            and c.enabled=#{statu}
+        </if>
+        order by c.createdAt desc
+        limit #{start},#{size}
+    </select>
+    <update id="modifyDynamic">
+        UPDATE  user_dynamic set praise=praise+#{num}
+        where id =#{did}
+    </update>
+    <update id="modifyComments">
+        UPDATE  user_dynamic set comments=comments+#{num}
+        where id =#{did}
+    </update>
+    <update id="updateAddCollect">
+         UPDATE  user_dynamic set collect = collect+1
+        where id =#{dynamicId}
+    </update>
+    <update id="updateMinusCollect">
+         UPDATE  user_dynamic set collect = collect-1
+        where id =#{dynamicId}
+    </update>
+
+    <!--查询动态数量-->
+    <select id="selectDynamicCount" resultType="java.lang.Integer">
+        select IFNULL(count(*),0) from user_dynamic  where authorid = #{userid}
+    </select>
+    <!--搜索用户个人动态-->
+    <select id="searchDynamicList" resultType="com.platform.vo.DynamicVO" parameterType="java.util.HashMap">
+        SELECT c.id ,
+        c.newdes ,
+        c.type,
+        c.image_url AS imageUrl,
+        IF(sp.id>0,1,0)AS click,
+        c.comments ,
+        IFNULL(c.praise,0)AS praise,
+        p.id AS uid ,
+        p.name ,
+        p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+        LEFT JOIN dynamic_praise AS sp ON c.id=sp.newsid and sp.userid=#{userid,jdbcType=BIGINT}
+        WHERE c.enabled= 1
+        <if test="dynamicName!= null">
+            and c.`newdes` LIKE concat(#{dynamicName,jdbcType=VARCHAR},'%')
+        </if>
+        order by c.createdAt desc
+        limit #{start},#{size}
+    </select>
+    <!--用户收藏的动态-->
+    <select id="selectCollectDynamicList" resultType="com.platform.vo.UserDynamicVO">
+        SELECT
+            ud.id,
+            ud.authorid,
+            ud.type,
+            p.name AS authorname,
+            p.picture_url as authorimgurl,
+            ud.image_url as imageUrl,
+            ud.newdes,
+            ud.praise,
+            ud.createdAt as createDate
+        FROM
+            user_dynamic AS ud
+            INNER JOIN user_dynamic_collect AS uc ON ud.id = uc.dynamic_id
+            INNER JOIN t_partner AS p ON ud.authorid = p.id
+        WHERE
+            uc.user_id = #{userId}
+	    AND uc.see = 1
+	    order by ud.createdAt desc
+	    limit #{start},#{size}
+    </select>
+
+    <delete id="delete">
+        delete from user_dynamic where id = #{id}
+    </delete>
+
+    <!--推荐用户搜索动态-->
+    <select id="selectRecommendDynamicList" resultType="com.platform.vo.RecommendDynamicVO">
+        SELECT
+        c.id ,
+        c.newdes ,
+        c.image_url AS image,
+        c.type
+        FROM user_dynamic AS c
+        WHERE c.authorid=#{userid}
+        order by c.createdAt desc
+        limit 5
+    </select>
+    <select id="selectUserDynamicCount" resultType="com.platform.dto.DataDTO">
+        SELECT authorid AS did,IFNULL(count(1),0) AS total from user_dynamic
+         where authorid in
+         <foreach collection="list" item="item" open="(" close=")" separator=",">
+             #{item}
+         </foreach>
+         GROUP BY authorid
+    </select>
+
+</mapper>

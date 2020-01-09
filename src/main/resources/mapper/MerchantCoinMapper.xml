@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.MerchantCoinMapper">
+
+    <resultMap type="com.platform.entity.MerchantCoinDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="tradeNo" column="trade_no"/>
+        <result property="mid" column="mid"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="sportCoin" column="sport_coin"/>
+        <result property="coin" column="coin"/>
+        <result property="consumUid" column="consum_uid"/>
+        <result property="consumPhone" column="consum_phone"/>
+        <result property="pid" column="pid"/>
+        <result property="productName" column="product_name"/>
+        <result property="rateValue" column="rate_value"/>
+        <result property="rate" column="rate"/>
+        <result property="type" column="type"/>
+        <result property="statu" column="statu"/>
+        <result property="createdDate" column="created_date"/>
+    </resultMap>
+
+    <select id="queryObject" resultMap="resultMap">
+		select
+			`id`,
+			`trade_no`,
+			`mid`,
+			`uid`,
+			`phone`,
+			`sport_coin`,
+			`coin`,
+			`consum_uid`,
+			`consum_phone`,
+			`pid`,
+			`product_name`,
+			`rate_value`,
+			`rate`,
+			`type`,
+			`statu`,
+			`created_date`
+		from merchant_coin
+		where id = #{id}
+	</select>
+
+    <select id="queryList" resultMap="resultMap">
+        select
+        `id`,
+        `trade_no`,
+        `mid`,
+        `uid`,
+        `phone`,
+        `sport_coin`,
+        `coin`,
+        `consum_uid`,
+        `consum_phone`,
+        `pid`,
+        `product_name`,
+        `rate_value`,
+        `rate`,
+        `type`,
+        `statu`,
+        `created_date`
+        from merchant_coin
+        WHERE 1=1
+        <if test="name != null and name.trim() != ''">
+            AND name LIKE concat('%',#{name},'%')
+        </if>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from merchant_coin
+        WHERE 1=1
+        <if test="name != null and name.trim() != ''">
+            AND name LIKE concat('%',#{name},'%')
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.platform.entity.MerchantCoinDO" useGeneratedKeys="true" keyProperty="id">
+		insert into merchant_coin(
+			`trade_no`,
+			`mid`,
+			`uid`,
+			`phone`,
+			`sport_coin`,
+			`coin`,
+			`consum_uid`,
+			`consum_phone`,
+			`pid`,
+			`product_name`,
+			`rate_value`,
+			`rate`,
+			`type`,
+			`statu`,
+			`created_date`)
+		values(
+			#{tradeNo},
+			#{mid},
+			#{uid},
+			#{phone},
+			#{sportCoin},
+			#{coin},
+			#{consumUid},
+			#{consumPhone},
+			#{pid},
+			#{productName},
+			#{rateValue},
+			#{rate},
+			#{type},
+			#{statu},
+			#{createdDate})
+	</insert>
+
+    <update id="update" parameterType="com.platform.entity.MerchantCoinDO">
+        update merchant_coin
+        <set>
+            <if test="tradeNo != null">`trade_no` = #{tradeNo},</if>
+            <if test="mid != null">`mid` = #{mid},</if>
+            <if test="uid != null">`uid` = #{uid},</if>
+            <if test="phone != null">`phone` = #{phone},</if>
+            <if test="sportCoin != null">`sport_coin` = #{sportCoin},</if>
+            <if test="coin != null">`coin` = #{coin},</if>
+            <if test="consumUid != null">`consum_uid` = #{consumUid},</if>
+            <if test="consumPhone != null">`consum_phone` = #{consumPhone},</if>
+            <if test="pid != null">`pid` = #{pid},</if>
+            <if test="productName != null">`product_name` = #{productName},</if>
+            <if test="rateValue != null">`rate_value` = #{rateValue},</if>
+            <if test="rate != null">`rate` = #{rate},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="statu != null">`statu` = #{statu},</if>
+            <if test="createdDate != null">`created_date` = #{createdDate}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="delete">
+		delete from merchant_coin where id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        delete from merchant_coin where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

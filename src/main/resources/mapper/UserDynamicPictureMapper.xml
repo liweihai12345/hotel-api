@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.platform.mapper.UserDynamicPictureMapper">
+
+    <!--新增单张图片-->
+    <insert id="save" parameterType="com.platform.entity.UserDynamicPictureDO">
+      insert into user_dynamic_picture
+      (
+        `type`,
+        `pic_url`,
+        `value`,
+        `add_time`,
+        `newid`
+      )
+      values
+      (
+        #{type},
+        #{picUrl},
+        #{value},
+        #{addTime},
+        #{newid}
+      )
+    </insert>
+
+    <!--批量插入图片-->
+    <insert id="addPictures" parameterType="java.util.List">
+        insert into user_dynamic_picture(type,value,pic_url,add_time,newid) values
+        <foreach collection="list" item="pic" index="index" separator=",">
+            (#{pic.type},#{pic.value},#{pic.picUrl},now(),#{pic.newid})
+        </foreach>
+    </insert>
+
+
+    <select id="selectPicture" resultType="com.platform.vo.PictureVO">
+        SELECT `type`, `pic_url`, `value`, `add_time`, `newid` from user_dynamic_picture
+        where `value` = #{userid} and type = #{type}
+        order by add_time desc
+        limit #{start},#{size}
+    </select>
+    <!--社区列表-->
+    <select id="queryPictureList" resultType="com.platform.dto.ImageDTO">
+        select newid AS bid,pic_url AS picUrl from user_dynamic_picture
+        where newid IN
+        <foreach collection="bids" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+    </select>
+    <resultMap type="com.platform.entity.UserDynamicPictureDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="type" column="type"/>
+        <result property="picUrl" column="pic_url"/>
+        <result property="newid" column="newid"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="addTime" column="add_time"/>
+    </resultMap>
+
+    <select id="queryDynamicPicture" resultMap="resultMap">
+        select * from user_dynamic_picture where  newid = #{did}
+    </select>
+
+    <delete id="deleteDynamic" parameterType="java.lang.Long">
+        delete from user_dynamic_picture where  newid = #{did}
+    </delete>
+</mapper>

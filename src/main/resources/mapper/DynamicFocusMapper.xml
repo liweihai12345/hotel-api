@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.DynamicFocusMapper">
+
+    <!--查询用户关注数量-->
+    <select id="selectFocusCount" resultType="java.lang.Integer">
+        SELECT IFNULL(count(*),0)  from dynamic_focus  where user_id = #{userid}
+    </select>
+    <!--查询用户被关注数量-->
+    <select id="selectCoverFocusCount" resultType="java.lang.Integer">
+        SELECT count(*)  from dynamic_focus  where touser_id = #{userid}
+    </select>
+
+    <!--查看我的关注-->
+    <select id="selectFocus" resultType="java.lang.Long">
+        select touser_id FROM dynamic_focus
+        WHERE user_id=#{focus} and touser_id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <!--查看关注我的-->
+    <select id="selectFocused" resultType="java.lang.Long">
+        select user_id FROM dynamic_focus
+        WHERE user_id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and touser_id=#{focus}
+    </select>
+    <!--关注关系-->
+    <select id="selectFocusRelation" resultType="java.lang.Integer">
+        select  count(1) AS a FROM dynamic_focus  WHERE user_id =#{myid} and touser_id=#{userId}
+        UNION ALL
+        select  count(1) AS a  FROM dynamic_focus  WHERE   user_id=#{userId} and  touser_id=#{myid}
+    </select>
+
+
+    <!--新增用户粉丝数量-->
+    <select id="collectNoRead" resultType="java.lang.Integer">
+        SELECT count(1) FROM dynamic_focus  where  touser_id = #{userid} AND see=#{see}
+    </select>
+
+    <insert id="insertFocus" parameterType="com.platform.entity.DynamicFocusDO" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into dynamic_focus
+        (
+        `user_id`,
+        `touser_id`,
+        `type_id`,
+         create_date
+        )
+        values
+        (
+        #{userId},
+        #{touserId},
+        #{typeId},
+        now()
+        )
+    </insert>
+
+    <delete id="deleteFocus">
+        delete from dynamic_focus  where user_id = #{myid} and touser_id = #{userId}
+    </delete>
+
+    <select id="checkFocus" resultType="java.lang.Integer">
+        select count(*) from dynamic_focus where  user_id = #{myid} and touser_id = #{userId}
+    </select>
+
+
+    <update id="updateFocus">
+        update dynamic_focus set `see` = 1 where id = #{fid}
+    </update>
+    <!--消息 粉丝极速处理-->
+    <update id="readFocusAll" parameterType="java.lang.Long">
+        update  dynamic_focus  set  see = 1  where touser_id = #{userid} and see != 1
+    </update>
+    <!--新增粉丝列表-->
+    <select id="focusList" resultType="com.platform.vo.FocusVO">
+        SELECT u.id as uid, u.`name`, u.picture_url AS logo, f.id , f.see, f.create_date as createDate,u.signature
+        FROM dynamic_focus AS f
+        INNER JOIN t_partner AS u ON f.user_id = u.id
+        where f.touser_id = #{userid}
+        order by f.id desc
+        limit #{start}, #{size}
+    </select>
+    <!--用户关注列表-->
+    <select id="userFocusList" resultType="com.platform.vo.FocusVO">
+        SELECT  u.id as uid, u.`name`, u.picture_url AS logo, f.id , f.see, f.create_date as createDate,u.signature
+        FROM dynamic_focus AS f
+        INNER JOIN t_partner AS u ON f.touser_id = u.id
+        where f.user_id = #{userId}
+        order by f.id desc
+        limit #{start}, #{size}
+    </select>
+    <!--用户被关注列表 -->
+    <select id="focusedList" resultType="com.platform.vo.FocusVO">
+        SELECT  u.id as uid, u.`name`, u.picture_url AS logo, f.id ,  f.see, f.create_date as createDate,u.signature
+        FROM  dynamic_focus AS f
+        INNER JOIN t_partner AS u ON f.user_id = u.id
+        where f.touser_id = #{userId}
+        order by f.id desc
+        limit #{start}, #{size}
+    </select>
+
+    <!--查询未关注的用户-->
+    <select id="selectRecommendUser" resultType="com.platform.entity.RecommendUserDO">
+       SELECT uid,did,number from recommend_user where uid NOT IN (SELECT no_focused_uid FROM recommend_user_no WHERE uid=#{userId})
+		and uid not in(select touser_id FROM dynamic_focus  WHERE user_id=#{userId})
+        limit #{start},#{size}
+    </select>
+    <!--查询未关注的用户-->
+    <select id="selectNoFocusUser" resultType="com.platform.vo.FocusVO">
+        SELECT
+        id AS uid,
+        name,
+        picture_url AS logo,
+        signature
+        FROM t_partner WHERE id in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+    <!--查询多个用户粉丝-->
+    <select id="selectUserFansList" resultType="com.platform.dto.DataDTO">
+        SELECT touser_id AS did,IFNULL(count(1),0) AS total from dynamic_focus
+        where touser_id in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        GROUP BY touser_id
+    </select>
+    <select id="isFocus" resultType="java.lang.Integer">
+        select count(1) from dynamic_focus where  user_id = #{myid} and touser_id = #{userId}
+    </select>
+</mapper>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.platform.mapper.ApiVersionMapper">
+
+    <resultMap type="com.platform.vo.VersionVO" id="resultMap">
+        <id property="id" column="id"/>
+        <result property="apk" column="apk_addr"/>
+        <result property="mustUpdate" column="must_update"/>
+        <result property="versionCode" column="version_code"/>
+        <result property="versionName" column="version_name"/>
+        <result property="msg" column="msg"/>
+        <result property="fileMd5" column="file_md5"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+    <select id="getVersionById" parameterType="String" resultType="com.platform.vo.VersionVO">
+		select * from  t_version where id=#{id}
+	</select>
+
+    <select id="fetchVersionList" resultMap="resultMap">
+		select id, apk_addr, must_update, version_code,
+		version_name, msg, file_md5, create_time FROM t_version
+		WHERE type=#{type}
+		ORDER BY version_code desc
+		limit 1
+	</select>
+
+</mapper>

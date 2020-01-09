@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: hotel
+  datasource:
+    url: jdbc:mysql://172.18.103.119:3306/sport?characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&useSSL=false
+    username: root
+    password: qianlima
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    hikari:
+      maximum-pool-size: 100
+      connection-timeout: 30000
+      max-lifetime: 180000
+
+  redis:
+    host: 172.18.103.118
+    port: 6379
+    password: qianlima
+    pool.max-min: 10
+    jedis:
+      pool:
+        max-active: 10
+        max-idle: 20
+        min-idle: 100
+        max-wait: -1
+logging:
+  level:
+    root: info
+  path: logs/sport.log
+server:
+  tomcat:
+    accesslog:
+      buffered: true
+      directory: /home/api/logs/access
+      enabled: true
+      file-date-format: _yyyy-MM-dd_HH
+      prefix: access_log
+      rename-on-rotate: false
+      request-attributes-enabled: false
+      rotate: true
+      suffix: .log
+      pattern: '%t [%I] %{X-Forwarded-For}i %a %r %s (%D ms)'
+# 异步线程配置
+# 配置核心线程数
+async:
+  executor:
+    thread:
+      core_pool_size: 5
+# 配置最大线程数
+      max_pool_size: 5
+# 配置队列大小
+      queue_capacity: 99999
+# 配置线程池中的线程的名称前缀
+      name:
+        prefix: async-service-
+
+notify:
+  url:
+    ali: http://172.18.103.119/sport/api/back/ali/notify
+    wx: http://172.18.103.119/sport/api/back/wx/notify
+
+umeng:
+  prod: false
+swagger:
+  enable: false

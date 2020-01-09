@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.ApiAuthenticationMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.UserAuthenticationDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="idCardNo" column="id_card_no"/>
+        <result property="frontImg" column="front_img"/>
+        <result property="reverseImg" column="reverse_img"/>
+        <result property="type" column="type"/>
+        <result property="expiryDate" column="expiry_date"/>
+    </resultMap>
+
+    <select id="queryObject" resultMap="resultMap">
+		select * from user_authentication where user_id = #{value} order by create_date DESC limit 1
+	</select>
+
+
+
+    <insert id="insert">
+		insert into user_authentication
+		(
+			`user_id`,
+			`name`, 
+			`id_card_no`,
+			`front_img`,
+			`reverse_img`,
+			`type`,
+			`expiry_date`,
+			statu
+		)
+		values
+		(#{userId},#{name}, #{idCardNo},#{frontImg},#{reverseImg},#{type},#{expiryDate},1
+		)
+	</insert>
+
+    <update id="update">
+        update user_authentication
+        <set>
+            <if test="name != null">
+                name=#{name},
+            </if>
+            <if test="gender !=null">
+                id_card_no=#{idCardNo},
+            </if>
+            <if test="birthDate !=null">
+                front_img=#{frontImg},
+            </if>
+            <if test="address !=null">
+                reverse_img=#{reverseImg},
+            </if>
+            <if test="signature !=null">
+                type=#{type}
+            </if>
+            <if test="signature !=null">
+                expiry_date=#{expiryDate}
+            </if>
+        </set>
+        <where>
+            id=#{id}
+        </where>
+    </update>
+
+    <insert id="insertAudit">
+        insert into user_audit
+        (
+        `user_id`,
+        `name`,
+        `id_card_no`,
+        `front_img`,
+        `reverse_img`,
+        `expiry_date`
+        )
+        values
+        (#{userId},#{name}, #{idCardNo},#{frontImg},#{reverseImg},#{expiryDate}
+        )
+    </insert>
+
+    <select id="queryAudit" resultMap="resultMap">
+        select * from user_audit where user_id = #{userId}
+    </select>
+</mapper>

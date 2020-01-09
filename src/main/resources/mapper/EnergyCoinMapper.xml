@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.EnergyCoinMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.EnergyCoinDO" id="resultMap">
+		<result property="id" column="id"/>
+		<result property="uid" column="uid"/>
+		<result property="phone" column="phone"/>
+        <result property="distance" column="distance"/>
+		<result property="inviteUid" column="invite_uid"/>
+		<result property="invitePhone" column="invite_phone"/>
+		<result property="energyCoin" column="energy_coin"/>
+		<result property="type" column="type"/>
+		<result property="typeName" column="type_name"/>
+		<result property="incomeType" column="income_type"/>
+		<result property="image" column="image"/>
+		<result property="createDate" column="create_date"/>
+    </resultMap>
+    <resultMap type="com.platform.vo.IncomeListVO" id="voMap">
+        <result property="id" column="id"/>
+        <result property="tradeNo" column="trade_no"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="sportCoin" column="energy_coin"/>
+        <result property="distance" column="distance"/>
+        <result property="inviteUid" column="invite_uid"/>
+        <result property="invitePhone" column="invite_phone"/>
+        <result property="inviteLogo" column="invite_logo"/>
+        <result property="type" column="type"/>
+        <result property="typeName" column="type_name"/>
+        <result property="incomeType" column="income_type"/>
+        <result property="image" column="image"/>
+        <result property="createdDate" column="create_date"/>
+
+    </resultMap>
+
+    <select id="queryListRecord" resultMap="voMap">
+        select id,uid,phone,energy_coin,distance,invite_uid,invite_phone,type,type_name,income_type,create_date from energy_coin where uid = #{uid}
+        ORDER BY  create_date DESC
+        limit #{index},#{size}
+    </select>
+    <select id="queryCountRecord" resultMap="resultMap">
+        select *  from energy_coin
+        where uid = #{uid} and create_date <![CDATA[>]]> #{date}
+        <if test="type != null and type != ''">
+            and type = #{type}
+        </if>
+    </select>
+    <select id="selectTotalCount" resultType="java.math.BigDecimal">
+        select IFNULL(sum(distance),0)  from energy_coin c
+        where uid = #{uid} and create_date <![CDATA[>]]> #{date} and type = #{type}
+    </select>
+	<select id="selectEnergyCoinList" resultType="com.platform.vo.EnergyCoinVO">
+		SELECT
+			`id`,
+			`uid`,
+			`phone`,
+			`invite_uid` AS inviteUid,
+			`invite_phone` AS invitePhone,
+			`energy_coin` AS coin,
+			`type`,
+			`distance`,
+			`image`,
+			`type_name` AS typeName,
+			`create_date` AS createDate
+		FROM
+			energy_coin
+		where uid = #{uid}
+		and create_date between #{begin} and #{end}
+		order by id desc
+		limit #{start},#{size}
+	</select>
+	<select id="selectEnergyCoinOutSum" resultType="java.math.BigDecimal">
+		select IFNULL(sum(energy_coin), 0.0) from energy_coin
+		where uid = #{uid}
+		and income_type = 1
+		and create_date between #{begin} and #{end}
+	</select>
+	<select id="selectEnergyCoinInSum" resultType="java.math.BigDecimal">
+		select IFNULL(sum(energy_coin), 0.0) from energy_coin
+		where uid = #{uid}
+		and income_type = 0
+		and create_date between #{begin} and #{end}
+	</select>
+
+	<insert id="insert" parameterType="com.platform.entity.EnergyCoinDO" useGeneratedKeys="true" keyProperty="id">
+        insert into energy_coin
+        (
+        `uid`,
+        `phone`,
+        `energy_coin`,
+        `distance`,
+        `invite_uid`,
+        `invite_phone`,
+        `type`,
+        `type_name`,
+        `income_type`,
+        `image`,
+        create_date
+        )
+        values
+        ( #{uid},
+        #{phone},
+        #{energyCoin},
+        #{distance},
+        #{inviteUid},
+        #{invitePhone},
+        #{type},
+        #{typeName},
+        #{incomeType},
+        #{image},
+        now()  )
+    </insert>
+    <select id="selectKmTotal" resultType="java.math.BigDecimal">
+        select IFNULL(sum(distance),0)  from energy_coin c
+        where uid = #{uid} and create_date <![CDATA[>]]> #{date} and type = #{type}
+    </select>
+
+
+    <insert id="insertList" parameterType="java.util.ArrayList" useGeneratedKeys="true" keyProperty="id">
+        insert into energy_coin
+        (
+        `uid`,
+        `phone`,
+        `energy_coin`,
+        `invite_uid`,
+        `invite_phone`,
+        `type`,
+        `type_name`,
+        `income_type`,
+        `image`
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.uid},
+            #{item.phone},
+            #{item.energyCoin},
+            #{item.inviteUid},
+            #{item.invitePhone},
+            #{item.type},
+            #{item.typeName},
+            #{item.incomeType},
+            #{item.image}
+            )
+        </foreach>
+
+    </insert>
+
+    <insert id="insertListForOrder" parameterType="java.util.ArrayList" useGeneratedKeys="true" keyProperty="id">
+        insert into energy_coin
+        (
+        `uid`,
+        `phone`,
+        `energy_coin`,
+        `distance`,
+        `invite_uid`,
+        `invite_phone`,
+        `type`,
+        `type_name`,
+        `income_type`,
+        `image`
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.uid},
+            #{item.phone},
+            #{item.energyCoin},
+            #{item.distance},
+            #{item.inviteUid},
+            #{item.invitePhone},
+            #{item.type},
+            #{item.typeName},
+            #{item.incomeType},
+            #{item.image}
+            )
+        </foreach>
+    </insert>
+
+    <!--当日所有运动兑换-->
+    <select id="selectRewardList" resultType="com.platform.dto.IncomeCoinDTO">
+        select ic.uid AS inviteUid,ic.phone AS invitePhone,ic.coin AS energyCoin,tu.parent_team_id AS  parentTeamId
+        FROM t_team_with_user AS tu INNER JOIN
+        (select uid,sum(energy_coin)AS coin,phone from energy_coin
+        where id >#{maxId}  AND create_date
+        BETWEEN #{beginDate} AND #{endDate}  and type in(19,20)
+        GROUP BY uid  ) as ic
+        ON tu.user_id  =ic.uid AND tu.parent_team_id>0
+        ORDER BY ic.uid ASC
+        limit #{start},#{size}
+    </select>
+
+    <select id="selectMaxId" resultType="java.lang.Long">
+        select IFNULL(MAX(id),0) from energy_coin where create_date BETWEEN #{preDate} and #{endDate}
+    </select>
+    <select id="selectRewardCount" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM t_team_with_user AS tu INNER JOIN
+        (SELECT uid from energy_coin
+            WHERE id >#{maxId}  AND create_date
+            BETWEEN #{beginDate} AND #{endDate}  and type in(19,20)
+            GROUP BY uid  ) as ic
+        ON tu.user_id  =ic.uid AND tu.parent_team_id >0
+    </select>
+    <select id="selectEveryTotal" resultType="com.platform.entity.EnergySnapshotDO">
+      SELECT type,sum(energy_coin) AS total FROM energy_coin WHERE create_date BETWEEN #{beginDate} and #{endDate} AND income_type=0 GROUP BY type
+    </select>
+</mapper>

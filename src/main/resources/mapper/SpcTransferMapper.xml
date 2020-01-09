@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.SpcTransferMapper">
+
+    <resultMap type="com.platform.entity.SpcTransferDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="transNo" column="trans_no"/>
+        <result property="coin" column="coin"/>
+        <result property="rate" column="rate"/>
+        <result property="rateValue" column="rate_value"/>
+        <result property="type" column="type"/>
+        <result property="createdDate" column="created_date"/>
+
+    </resultMap>
+
+
+    <insert id="insert" parameterType="com.platform.entity.SpcTransferDO" useGeneratedKeys="true" keyProperty="id">
+        insert into spc_transfer
+        (
+        `uid`,
+        `phone`,
+        `trans_no`,
+        `coin`,
+        `rate`,
+        `rate_value`,
+        `type`,
+        create_date
+        )
+        values
+        ( #{uid},
+        #{phone},
+        #{transNo},
+        #{coin},
+        #{rate},
+        #{rateValue},
+        #{type},
+        now()  )
+    </insert>
+</mapper>

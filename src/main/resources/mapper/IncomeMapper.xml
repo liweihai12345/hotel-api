@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.IncomeMapper">
+
+    <resultMap type="com.platform.vo.IncomeVO" id="incomeMap">
+        <result property="id" column="id"/>
+        <result property="userid" column="userid"/>
+        <result property="userPhone" column="user_phone"/>
+        <result property="mymoney" column="mymoney"/>
+        <result property="status" column="status"/>
+        <result property="type" column="type"/>
+        <result property="consumId" column="consum_id"/>
+        <result property="consumName" column="consum_name"/>
+        <result property="consumPhone" column="consum_phone"/>
+        <result property="createdDate" column="created_date"/>
+
+    </resultMap>
+
+
+	<select id="queryListVO" resultMap="incomeMap">
+		select id,userid,user_phone,mymoney,type,consum_phone,created_date from t_income WHERE userid =#{userid} order by id desc
+		limit #{index},#{size}
+	</select>
+	<select id="selectInviteCount" resultType="java.lang.Integer">
+		select count(*) from t_income
+		WHERE userid =#{userid} and status=1 and type=1 and protype=4
+	</select>
+
+	<insert id="save" parameterType="com.platform.entity.IncomeDO" useGeneratedKeys="true" keyProperty="id">
+		insert into t_income(
+			`userid`,
+			`user_name`,
+			 user_phone,
+			`orderno`,
+			`ordermoney`,
+			`mymoney`,
+			`consum_uid`,
+			`consum_name`,
+			`consum_phone`,
+			`type`,
+			`protype`,
+			`tariff`,
+			`rate`,
+			`created_date`,
+			`updated_date`)
+		values(
+			#{userid},
+			#{userName},
+			#{userPhone},
+			#{orderno},
+			#{ordermoney},
+			#{mymoney},
+			#{consumId},
+			#{consumName},
+			#{consumPhone},
+			#{type},
+			#{protype},
+			#{tariff},
+			#{rate},
+			now(),
+			now()
+			)
+	</insert>
+
+    <select id="selectTotalIncome" resultType="java.math.BigDecimal">
+        select IFNULL(sum(mymoney),0)AS sumMoney from t_income where userid=#{userId} and `type` in(1,2)
+    </select>
+    <select id="selectCurrency" resultType="java.math.BigDecimal">
+        select IFNULL(sum(mymoney),0)AS sumMoney from t_income where userid=#{userId} and `type` in(1,2,11) and created_date <![CDATA[>]]> DATE_FORMAT(#{date},'%Y-%m-%d')
+    </select>
+
+</mapper>

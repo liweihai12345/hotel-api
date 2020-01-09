@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.TaskIncomeMapper">
+
+    <resultMap type="com.platform.entity.TaskIncomeDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="creditruleid" column="creditruleid"/>
+        <result property="name" column="name"/>
+        <result property="integral" column="integral"/>
+        <result property="type" column="type"/>
+        <result property="createdat" column="createdAt"/>
+        <result property="updatedat" column="updatedAt"/>
+    </resultMap>
+
+
+    <select id="queryList" resultType="com.platform.entity.TaskIncomeDO">
+        select
+        `id`,
+        `creditruleid`,
+        `name`,
+        `integral`,
+        `type`,
+        `userid`,
+        `username`,
+        `enable`,
+        `createdAt`,
+        `updatedAt`
+        from income_coin_task
+        WHERE 1=1
+        <if test="user_id != null">
+            AND userid = #{user_id}
+        </if>
+        <if test="creditrcule_id != null">
+            AND creditruleid = #{creditrcule_id}
+        </if>
+        <if test="istoday != null">
+            AND to_days(createdAt) = to_days(now())
+        </if>
+        <if test="enable != null">
+            AND enable = #{enable}
+        </if>
+        <if test="isweeky != null">
+            AND DATE_SUB(createdAt, INTERVAL 7 DAY) &lt; date(now())
+        </if>
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <!--<select id="queryTotal" resultType="int">-->
+    <!--select count(*) from income_coin_task-->
+    <!--WHERE  userid = #{user_id} AND creditruleid = #{creditrcule_id}-->
+    <!--and createdAt BETWEEN #{startDate} and #{endDate}-->
+
+    <!--</select>-->
+
+    <insert id="save" parameterType="com.platform.entity.TaskIncomeDO" useGeneratedKeys="true" keyProperty="id">
+		insert into income_coin_task(
+			`creditruleid`,
+			`name`,
+			`integral`,
+			`type`,
+			`userid`,
+			`username`,
+			`enable`,
+			`createdAt`,
+			`updatedAt`)
+		values(
+			#{creditruleid},
+			#{name},
+			#{integral},
+			#{type},
+			#{userid},
+			#{username},
+			1,
+			now(),
+			now())
+	</insert>
+
+
+    <!--<update id="update" parameterType="com.platform.entity.TaskIncomeDO">-->
+        <!--update income_coin_task-->
+        <!--<set>-->
+            <!--<if test="creditruleid != null">`creditruleid` = #{creditruleid},</if>-->
+            <!--<if test="name != null">`name` = #{name},</if>-->
+            <!--<if test="integral != null">`integral` = #{integral},</if>-->
+            <!--<if test="type != null">`type` = #{type},</if>-->
+            <!--<if test="userid != null">`userid` = #{type},</if>-->
+            <!--<if test="username != null">`username` = #{username},</if>-->
+            <!--<if test="enable != null">`enable` = #{enable},</if>-->
+            <!--<if test="createdat != null">`createdAt` = #{createdat},</if>-->
+            <!--<if test="updatedat != null">`updatedAt` = #{updatedat}</if>-->
+        <!--</set>-->
+        <!--where id = #{id}-->
+    <!--</update>-->
+
+
+    <select id="selectUserTask" resultType="com.platform.entity.TaskIncomeDO">
+        select
+        `id`,
+        `creditruleid`,
+        `name`,
+        `integral`,
+        `type`,
+        `userid`,
+        `username`,
+        `enable`,
+        `createdAt`,
+        `updatedAt`
+        from income_coin_task
+        WHERE userid=#{userId} and creditruleid=#{creditruleid} and createdAt BETWEEN #{startDate} and #{endDate}
+        order by id desc
+    </select>
+    <select id="selectTaskTotal" resultType="java.lang.Integer">
+        select count(*)  from income_coin_task
+        WHERE userid=#{userId} and creditruleid=#{creditruleid} and createdAt BETWEEN #{startDate} and #{endDate}
+        order by id desc
+    </select>
+</mapper>

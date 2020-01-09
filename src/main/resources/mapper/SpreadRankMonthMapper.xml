@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.platform.mapper.SpreadRankMonthMapper">
+
+    <resultMap type="com.platform.entity.SpreadRankDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="userName"/>
+        <result property="userLogo" column="userLogo"/>
+        <result property="phone" column="phone"/>
+        <result property="teamId" column="team_id"/>
+        <result property="teamName" column="team_name"/>
+        <result property="teamCount" column="team_count"/>
+        <result property="ranking" column="ranking"/>
+        <result property="monthDate" column="month_date"/>
+    </resultMap>
+    <select id="getSpreadRankById" resultType="com.platform.entity.SpreadRankDO">
+        SELECT
+        m.user_id AS userId,
+        u.`name` AS  userName,
+        u.picture_url AS userLogo,
+        m.phone,
+        m.team_id AS teamId,
+        m.team_name AS teamName,
+        m.team_count AS teamCount,
+        m.ranking
+      FROM spread_rank_month AS m
+      INNER JOIN t_partner AS u ON m.user_id = u.id where u.id=#{userId} and month_date=#{date}
+    </select>
+
+    <select id="getSpreadRankList" resultMap="resultMap">
+        SELECT
+        m.user_id,
+        u.`name` AS  userName,
+        u.picture_url AS userLogo,
+        m.phone,
+        m.team_id,
+        m.team_name,
+        m.team_count,
+        m.ranking
+        FROM spread_rank_month AS m
+        INNER JOIN t_partner AS u ON m.user_id = u.id
+        WHERE month_date=#{date}
+        order by ranking asc
+        limit #{start},#{size}
+    </select>
+
+    <insert id="addSpreadRank" parameterType="java.util.List">
+        insert into spread_rank_month (user_id,
+        user_name,user_logo,phone,ranking,team_id,team_name,team_count,month_date)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.userId},
+            #{item.userName},#{item.userLogo},#{item.phone},#{item.ranking},#{item.teamId},#{item.teamName},#{item.teamCount},#{item.monthDate})
+        </foreach>
+    </insert>
+    <select id="selectTeamList" resultType="com.platform.entity.SpreadRankDO">
+        SELECT tw.user_id AS userId,
+        u.`name` AS userName,
+        u.picture_url AS userLogo,
+        u.mobile AS phone,
+        tw.sub_team_id AS teamId,
+        IFNULL(temp.team_count,0) AS teamCount
+        FROM t_team_with_user AS tw
+        INNER JOIN t_partner AS u ON tw.user_id=u.id AND u.status=1
+        LEFT JOIN(select parent_team_id,count(1) AS team_count
+        from t_team_with_user
+        where create_date BETWEEN #{beginDate} and #{endDate}
+        GROUP BY parent_team_id) AS temp
+        ON tw.sub_team_id=temp.parent_team_id
+        ORDER BY temp.team_count DESC,tw.sub_team_id ASC
+        limit #{start},#{size}
+    </select>
+
+
+</mapper>

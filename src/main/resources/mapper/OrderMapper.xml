@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.OrderMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.OrderDO" id="orderMap">
+        <result property="id" column="id"/>
+        <result property="orderNo" column="order_no"/>
+        <result property="trandNo" column="trand_no"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userPhone" column="user_phone"/>
+        <result property="amount" column="amount"/>
+        <result property="spcPrice" column="spc_price"/>
+        <result property="realAmount" column="real_amount"/>
+        <result property="payWay" column="pay_way"/>
+        <result property="status" column="status"/>
+        <result property="payStatus" column="pay_status"/>
+        <result property="type" column="type"/>
+        <result property="receiveUser" column="receive_user"/>
+        <result property="receivePhone" column="receive_phone"/>
+        <result property="provinceId" column="province_id"/>
+        <result property="cityId" column="city_id"/>
+        <result property="areaId" column="area_id"/>
+        <result property="address" column="address"/>
+        <result property="province" column="province"/>
+        <result property="city" column="city"/>
+        <result property="area" column="area"/>
+        <result property="createDate" column="create_date"/>
+        <result property="payDate" column="pay_date"/>
+        <result property="finishDate" column="finish_date"/>
+        <result property="logisticsno" column="logisticsno"/>
+        <result property="merchantId" column="merchant_id"/>
+        <result property="merchantName" column="merchant_name"/>
+        <result property="rate" column="rate"/>
+        <result property="rateValue" column="rate_value"/>
+        <result property="remark" column="remark"/>
+        <result property="isComment" column="is_comment"/>
+        <result property="giveEnergy" column="give_energy"/>
+        <result property="spcFree" column="spc_free"/>
+        <result property="giveTeam" column="give_team"/>
+    </resultMap>
+
+
+    <select id="selectOrderByNo" resultMap="orderMap">
+        select * from t_order where order_no = #{orderNo} and  isdelete=0
+
+	</select>
+
+
+    <insert id="insert" parameterType="com.platform.entity.OrderDO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_order (
+        order_no,
+        user_id,
+        user_name,
+        user_phone,
+        amount,
+        spc_price,
+        real_amount,
+        pay_way,
+        `status`,
+        pay_status,
+        receive_user,
+        receive_phone,
+        province_id,
+        city_id,
+        area_id,
+        province,
+        city,
+        area,
+        address,
+        merchant_id,
+        merchant_name,
+        `type`,
+        `rate`,
+        `rate_value`,
+        `remark`,
+        `give_energy`,
+        `spc_free`,
+        `give_team`,
+        create_date
+        )
+        VALUES
+        ( #{orderNo},
+        #{userId},
+        #{userName},
+        #{userPhone},
+        #{amount},
+        #{spcPrice},
+        #{realAmount},
+        #{payWay},
+        #{status},
+        #{payStatus},
+        #{receiveUser},
+        #{receivePhone},
+        #{provinceId},
+        #{cityId},
+        #{areaId},
+        #{province},
+        #{city},
+        #{area},
+        #{address},
+        #{merchantId},
+        #{merchantName},
+        #{type},
+        #{rate},
+        #{rateValue},
+        #{remark},
+        #{giveEnergy},
+        #{spcFree},
+        #{giveTeam},
+        now()
+        )
+    </insert>
+    <update id="update" parameterType="com.platform.entity.OrderDO">
+        update t_order
+        <set>
+            <if test="status != null">`status` = #{status},</if>
+            <if test="finishDate != null">`finish_date` = #{finishDate},</if>
+            <if test="logisticsno != null">`logisticsno` = #{logisticsno}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+    <update id="updatePayStatus">
+        update t_order
+        set
+            real_amount = #{amount},
+            trand_no = #{tradeNo},
+            status = #{statu},
+            pay_status = #{payStatus},
+            pay_date = #{payDate}
+        where order_no = #{orderNo}
+    </update>
+
+
+    <update id="updateOrderStatus">
+        update t_order
+        set
+        status = #{statu},
+        `finish_date` = now(),
+        cause = #{cause}
+        where order_no = #{orderno}
+    </update>
+
+    <update id="cancelOrderStatus">
+        update t_order
+        set
+        status = #{statu},
+        cause = #{cause}
+        where order_no = #{orderno} and `status`=1
+    </update>
+
+    <update id="cancelOrderScheduled">
+        update t_order
+        set
+        status = #{status},
+        cause = #{cause}
+        where  `status`=1 and  create_date <![CDATA[<]]>  date_sub(now(),INTERVAL 30 MINUTE)
+    </update>
+    <update id="deleteOrder">
+        update t_order
+        set isdelete = 1
+        where  order_no = #{orderno} and user_id=#{userId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM t_order  WHERE  order_no = #{orderno} and user_id=#{userId}
+    </delete>
+
+    <select id="selectOrderByNos" resultMap="orderMap">
+        select * from t_order where order_no IN
+        <foreach collection="list" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+        and isdelete=0
+    </select>
+
+
+    <select id="selectOrderList" resultType="com.platform.vo.OrderListVO">
+        SELECT
+        id,
+        order_no AS orderNo,
+        amount,
+        spc_price AS spcPrice,
+        real_amount AS realAmount,
+        `status`,
+        `type`,
+        `pay_way` AS payWay,
+        merchant_id AS merchantId,
+        merchant_name AS merchantName,
+        is_comment AS isComment
+        from t_order AS o
+        where o.user_id = #{userId}
+        <if test="statu!=null and statu!=9">
+            and o.`status`=#{statu}
+        </if>
+        <if test="statu!=null and statu==9">
+            and o.`status` in(9,10,11)
+        </if>
+        and isdelete=0
+        order by o.create_date desc
+        limit #{start}, #{size}
+    </select>
+
+    <select id="selectOrder" resultType="com.platform.vo.OrderDetailVO">
+        SELECT
+        id,
+        order_no AS orderNo,
+        amount,
+        spc_price AS spcPrice,
+        real_amount AS realAmount,
+        `status`,
+        `pay_way` AS  payWay,
+        merchant_id AS merchantId,
+        merchant_name AS merchantName,
+        is_comment AS isComment,
+        `province`,
+        `city`,
+        `area`,
+        `address`,
+        `receive_user` AS receiveUser,
+        `receive_phone` AS receivePhone,
+        `cause`,
+        `remark`,
+        `type`,
+        `logisticsno`,
+        give_energy  AS giveEnergy,
+        spc_free AS spcFree,
+        give_team AS giveTeam,
+        create_date AS createDate
+        FROM t_order
+        WHERE order_no = #{orderNo} and isdelete=0
+    </select>
+
+    <update id="updateStatusOnFinsh">
+        update t_order
+        set
+        status = 4
+        where
+        order_no IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        and status = 6
+    </update>
+    <update id="updateOrderIsComment">
+       update t_order
+        set
+        is_comment = 1
+        WHERE order_no = #{orderNo}
+    </update>
+
+    <select id="selectOrderAmounts" resultType="com.platform.dto.UserAssetDTO">
+        SELECT
+        user_id AS uid,
+        sum(rate_value) AS coin
+        FROM
+        t_order
+        WHERE order_no IN
+        <foreach collection="list" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+        GROUP BY user_id
+    </select>
+</mapper>

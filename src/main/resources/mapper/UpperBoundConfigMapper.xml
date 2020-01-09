@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.UpperBoundConfigMapper">
+
+    <select id="queryTotal" resultType="java.lang.Integer">
+        select `max` from t_upper_bound_config ORDER  BY `max` DESC  limit 1
+    </select>
+
+    <select id="queryList" resultType="com.platform.entity.UpperBoundConfigDO">
+        select * from t_upper_bound_config
+    </select>
+
+</mapper>

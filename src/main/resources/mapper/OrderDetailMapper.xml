@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.OrderDetailMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.OrderDetailDO" id="resultMap">
+        <result property="orderNo" column="order_no"/>
+        <result property="proId" column="pro_id"/>
+        <result property="proName" column="pro_name"/>
+        <result property="proUrl" column="pro_url"/>
+        <result property="cate" column="cate"/>
+        <result property="cateName" column="cate_name"/>
+        <result property="styleId" column="style_id"/>
+        <result property="styleName" column="style_name"/>
+        <result property="styleUrl" column="style_url"/>
+        <result property="dimensions" column="dimensions"/>
+        <result property="num" column="num"/>
+        <result property="price" column="price"/>
+        <result property="spcPrice" column="spc_price"/>
+        <result property="description" column="description"/>
+        <result property="remark" column="remark"/>
+        <result property="type" column="type"/>
+        <result property="rate" column="rate"/>
+        <result property="rateValue" column="rate_value"/>
+        <result property="giveEnergy" column="give_energy"/>
+        <result property="spcFree" column="spc_free"/>
+        <result property="giveTeam" column="give_team"/>
+        <result property="key" column="key"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+
+    <insert id="save" parameterType="com.platform.entity.OrderDetailDO">
+		INSERT INTO t_order_detail (
+                order_no,
+                pro_id,
+                pro_name,
+                pro_url,
+                cate,
+                cate_name,
+                style_id,
+                style_name,
+                style_url,
+                dimensions,
+                `num`,
+                price,
+                spc_price,
+                description,
+                remark,
+                `type`,
+                `rate`,
+                `rate_value`,
+                `give_energy`,
+                `spc_free`,
+                `give_team`,
+                `key`,
+                `create_date`
+            )
+            VALUES
+                ( #{orderNo},
+                #{proId},
+                #{proName},
+                #{proUrl},
+                #{cate},
+                #{cateName},
+                #{styleId},
+                #{styleName},
+                #{styleUrl},
+                #{dimensions},
+                #{num},
+                #{price},
+                #{spcPrice},
+                #{description},
+                #{remark},
+                #{type},
+                #{rate},
+                #{rateValue},
+                #{giveEnergy},
+                #{spcFree},
+                #{giveTeam},
+                #{key},
+                now() )
+	</insert>
+    <insert id="insertAll" parameterType="java.util.List">
+        INSERT INTO t_order_detail (
+        order_no,
+        pro_id,
+        pro_name,
+        pro_url,
+        cate,
+        cate_name,
+        style_id,
+        style_name,
+        style_url,
+        dimensions,
+        `num`,
+        price,
+        spc_price,
+        description,
+        remark,
+        `type`,
+        `rate`,
+        `rate_value`,
+        `give_energy`,
+        `spc_free`,
+        `give_team`,
+        `key`,
+        `create_date`
+        )
+        VALUES
+        <foreach collection="list" item="o" separator=",">
+            ( #{o.orderNo},
+            #{o.proId},
+            #{o.proName},
+            #{o.proUrl},
+            #{o.cate},
+            #{o.cateName},
+            #{o.styleId},
+            #{o.styleName},
+            #{o.styleUrl},
+            #{o.dimensions},
+            #{o.num},
+            #{o.price},
+            #{o.spcPrice},
+            #{o.description},
+            #{o.remark},
+            #{o.type},
+            #{o.rate},
+            #{o.rateValue},
+            #{o.giveEnergy},
+            #{o.spcFree},
+            #{o.giveTeam},
+            #{o.key},
+            now() )
+        </foreach>
+
+    </insert>
+
+
+    <delete id="delete">
+        delete from t_order_detail WHERE order_no=#{orderno}
+    </delete>
+
+    <select id="selectOrderDetailList" resultMap="resultMap">
+        select
+        order_no ,
+        pro_id ,
+        pro_name ,
+        pro_url ,
+        cate,
+        cate_name ,
+        style_id ,
+        style_name ,
+        style_url ,
+        dimensions ,
+        `num`,
+        price,
+        spc_price AS spcPrice,
+        description,
+        `rate`,
+        `rate_value`,
+        `give_energy`,
+        `spc_free`,
+        `give_team`,
+        remark
+        from t_order_detail
+        where order_no = #{orderNo}
+    </select>
+    <select id="selectDetail" resultType="com.platform.vo.OrderItemVO">
+        select
+        order_no AS orderNo,
+        pro_id  AS productId,
+        pro_name  AS productName,
+        pro_url  AS productUrl,
+        style_id  AS styleId,
+        style_name  AS styleName,
+        style_url  AS styleUrl,
+        dimensions ,
+        `num` AS number ,
+        price ,
+        spc_price AS  spcPrice,
+        `type` ,
+        description ,
+        remark
+        from t_order_detail
+        where order_no = #{orderNo}
+    </select>
+    <select id="selectDetailForList" resultType="com.platform.vo.OrderItemVO">
+        select
+        order_no AS orderNo,
+        pro_id AS productId,
+        pro_name AS productName,
+        pro_url AS productUrl,
+        style_id AS styleId,
+        style_name AS styleName,
+        style_url AS styleUrl,
+        dimensions ,
+        `num` AS number,
+        price ,
+        spc_price AS  spcPrice,
+        `type`,
+        description ,
+        remark
+        from t_order_detail
+        where order_no IN
+        <foreach collection="list" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+
+    <select id="selectProcess" resultType="com.platform.vo.ProcessVO">
+        select
+        title,
+        description,
+        statu
+        from processing
+    </select>
+    <select id="selectOrderProduct" resultType="com.platform.dto.ProductSalesDTO">
+        select
+        pro_id AS pid,
+        sum(num) AS number
+        from t_order_detail where order_no = #{orderNo} GROUP BY pro_id
+    </select>
+
+</mapper>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.DynamicRuleMapper">
+
+    <resultMap type="com.platform.entity.DynamicRuleDO" id="sportsCreditRuleMap">
+        <result property="id" column="id"/>
+        <result property="type" column="type"/>
+        <result property="creditmoney" column="creditmoney"/>
+        <result property="creditcount" column="creditcount"/>
+        <result property="enabled" column="enabled"/>
+        <result property="createdat" column="createdAt"/>
+        <result property="updatedat" column="updatedAt"/>
+        <result property="category" column="category"/>
+        <result property="limitnum" column="limitnum"/>
+        <result property="name" column="name"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.platform.entity.DynamicRuleDO">
+		select 	* from dynamic_rule	 where id = #{id}
+	</select>
+
+    <select id="queryRuleList" resultType="com.platform.entity.DynamicRuleDO">
+        select * from dynamic_rule
+        WHERE 1=1 AND business_type=1 AND  enabled = 1
+        <if test="keycode != null and keycode.trim() != ''">
+            AND keycode = #{keycode}
+        </if>
+    </select>
+
+
+    <select id="selectRuleList" resultType="com.platform.vo.EnergyTaskVO">
+        select
+            id,
+            type,
+            creditcount AS value,
+            category,
+            limitnum,
+            name,
+            subtitle AS title,
+            keycode AS keycode,
+            finishname
+        from dynamic_rule
+        WHERE  business_type=#{type}
+            AND enabled = 1
+
+    </select>
+    <select id="selectRuleForType" resultType="com.platform.vo.EnergyTaskVO">
+        select
+            id,
+            type,
+            creditcount AS value,
+            category,
+            limitnum,
+            name,
+            subtitle AS title,
+            keycode ,
+            finishname
+        from dynamic_rule
+        WHERE  business_type=#{type} AND category = #{cate}
+    </select>
+    <select id="selectRuleForKey" resultType="com.platform.entity.DynamicRuleDO">
+        select * from dynamic_rule
+        WHERE 1=1 AND business_type=1 AND  enabled = 1  AND keycode = #{keycode}
+        limit 1
+    </select>
+
+</mapper>

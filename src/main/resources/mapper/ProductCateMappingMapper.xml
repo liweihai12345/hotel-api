@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.platform.mapper.ProductCateMappingMapper">
+
+
+    <select id="selectMerchantPro" resultType="com.platform.vo.ProductListVO">
+        select
+        p.id,
+        p.name,
+        p.price,
+        p.old_price AS  oldPrice,
+        p.spc_price AS  spcPrice,
+        p.describ,
+        p.image,
+        p.number,
+        p.other,
+        p.other1,
+        p.create_date AS createDate
+        from  t_product_config AS  p
+        INNER  JOIN product_cate_mapping	AS  m ON p.id=m.product_id
+        WHERE p.merchant_id=#{mid} and p.statu=1
+        and m.cate_parent_id=#{parentId}
+        and m.cate_id=#{cateId}
+        <if test="sort==1">
+            ORDER BY p.sort DESC
+        </if>
+        <if test="sort==2">
+            ORDER BY p.sales DESC
+        </if>
+        <if test="sort==3">
+            ORDER BY p.id DESC
+        </if>
+        <if test="sort==4">
+            ORDER BY p.price ASC
+        </if>
+        <if test="sort==5">
+            ORDER BY p.price DESC
+        </if>
+        limit #{start},#{size}
+    </select>
+
+    <select id="selectMerchantProList" resultType="com.platform.vo.ProductListVO">
+        select
+        p.id,
+        p.name,
+        p.price,
+        p.old_price AS  oldPrice,
+        p.spc_price AS  spcPrice,
+        p.describ,
+        p.image,
+        p.number,
+        p.other,
+        p.other1,
+        p.create_date AS createDate
+        from  t_product_config AS  p
+        INNER  JOIN product_cate_mapping	AS  m ON p.id=m.product_id
+        WHERE p.merchant_id=#{mid} and p.statu=1
+        <if test="sort==1">
+            ORDER BY p.sort DESC
+        </if>
+        <if test="sort==2">
+            ORDER BY p.sales DESC
+        </if>
+        <if test="sort==3">
+            ORDER BY p.id DESC
+        </if>
+        <if test="sort==4">
+            ORDER BY p.price ASC
+        </if>
+        <if test="sort==5">
+            ORDER BY p.price DESC
+        </if>
+        limit #{start},#{size}
+    </select>
+    <select id="selectProductMapping" resultType="com.platform.entity.ProductCateMappingDO">
+        select
+        product_id AS productId,
+        cate_parent_id AS parentId,
+        cate_id AS cateId
+        from product_cate_mapping
+        WHERE product_id=#{pid}
+    </select>
+</mapper>

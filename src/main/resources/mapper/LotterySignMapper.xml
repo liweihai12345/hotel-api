@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.LotterySignMapper">
+
+    <resultMap type="com.platform.vo.LotterySignVO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="name" column="name"/>
+        <result property="status" column="status"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="spend" column="spend"/>
+    </resultMap>
+    <select id="queryObject" resultType="com.platform.vo.LotterySignVO">
+		select
+			*
+		from lottery_sign
+		where id = #{id}
+	</select>
+    <select id="selectList" resultMap="resultMap">
+		select
+    		*
+		FROM lottery_sign
+		WHERE 1=1
+		<if test="name != null and name.trim() != ''">
+			AND name =#{name}
+		</if>
+		<if test="istoday != null ">
+			AND to_days(create_date) = to_days(now())
+		</if>
+		<if test="status != null ">
+			AND status =#{status}
+		</if>
+		<if test="uid != null ">
+			AND uid =#{uid}
+		</if>
+		<if test="isyestoday != null ">
+			AND TO_DAYS(NOW()) - TO_DAYS( create_date) = 1
+        </if>
+		<if test="isweekly != null ">
+			AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= date(create_date)
+		</if>
+		<if test="isweeklysign != null ">
+			and uid in (select uid from lottery_sign
+			WHERE  DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= date(create_date) and `status`=1 group by uid having count(id)=7)
+		</if>
+	</select>
+    <select id="queryTotal" resultType="int">
+        select count(*) from lottery_sign
+        WHERE 1=1
+        <if test="name != null and name.trim() != ''">
+            AND name =#{name}
+        </if>
+		<if test="status != null ">
+			AND status =#{status}
+		</if>
+		<if test="uid != null ">
+			AND uid =#{uid}
+		</if>
+		<if test="isyestoday != null ">
+			AND TO_DAYS(NOW()) - TO_DAYS( create_date) = 1
+		</if>
+		<if test="istoday != null ">
+			AND to_days(create_date) = to_days(now())
+		</if>
+    </select>
+
+	<select id="queryweekTotal" resultType="int">
+		select IFNULL(sum(spend),0)*0.2
+		FROM lottery_sign  WHERE YEARWEEK( date_format(  update_date,'%Y-%m-%d' ) ) = YEARWEEK( now() ) and `status`=2
+	</select>
+    <select id="querymyweekdata" parameterType="java.util.Map" resultType="java.util.Map">
+				SELECT
+        	(select count(id)
+		FROM lottery_sign  WHERE YEARWEEK( date_format(  create_date,'%Y-%m-%d' ) ) = YEARWEEK( now() ) and uid = #{uid}) as weektotelsigns,
+		 	(select count(id)
+		FROM lottery_sign  WHERE YEARWEEK( date_format(  create_date,'%Y-%m-%d' ) ) = YEARWEEK( now() ) and `status`=1 and uid = #{uid}) as weekhassigns,
+			(select case when sum(price) is null then 0 else sum(price) end
+		FROM lottery_record  WHERE YEARWEEK( date_format(  create_date,'%Y-%m-%d' ) ) = YEARWEEK( now() ) and type=4 and uid = #{uid}) as weektotelmoney
+    </select>
+    <insert id="save" parameterType="com.platform.vo.LotterySignVO" useGeneratedKeys="true" keyProperty="id">
+		insert into lottery_sign(
+			`uid`,
+			`name`,
+			`status`,
+			`create_date`,
+			`update_date`,
+			`spend`)
+		values(
+			#{uid},
+			#{name},
+			#{status},
+			now(),
+			now(),
+			#{spend}
+			)
+	</insert>
+	<update id="update" parameterType="com.platform.vo.LotterySignVO">
+		update lottery_sign
+		<set>
+			<if test="uid != null">uid = #{uid},</if>
+			<if test="name != null">name = #{name},</if>
+			<if test="status != null">status = #{status},</if>
+			<if test="spend != null">spend = #{spend},</if>
+			update_date = now()
+
+		</set>
+		where id = #{id}
+	</update>
+</mapper>

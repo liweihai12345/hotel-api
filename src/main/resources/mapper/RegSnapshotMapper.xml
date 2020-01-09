@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.RegSnapshotMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.RegSnapshotDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="regTotal" column="reg_total"/>
+        <result property="difference" column="difference"/>
+        <result property="doneTotal" column="done_total"/>
+        <result property="normalTotal" column="normal_total"/>
+        <result property="doneCount" column="normal_count"/>
+        <result property="normalCount" column="normal_count"/>
+        <result property="snapDate" column="snap_date"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.platform.entity.RegSnapshotDO">
+		select * from t_reg_snapshot where id = #{value}
+	</select>
+    <select id="queryListForDate" resultType="com.platform.vo.RegSnapshotVO">
+        select reg_total AS regTotal,difference ,snap_date AS snapDate  FROM t_reg_snapshot
+        WHERE create_date BETWEEN DATE_FORMAT(#{start} ,'%Y-%m-%d')AND DATE_FORMAT(#{end},'%Y-%m-%d')
+        order by create_date
+    </select>
+	<select id="queryRegForDate" resultType="com.platform.vo.RegSnapshotVO">
+        select reg_total AS regTotal ,snap_date AS snapDate ,
+         done_total AS doneTotal,normal_total AS normalTotal
+        FROM t_reg_snapshot
+        WHERE snap_date <![CDATA[<]]>#{date}
+        order by create_date DESC
+        limit 0,15
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from t_reg_snapshot
+	</select>
+	 
+	<insert id="save" parameterType="com.platform.entity.RegSnapshotDO" useGeneratedKeys="true" keyProperty="id">
+		insert into t_reg_snapshot
+		(
+			`reg_total`,
+			`difference`,
+			snap_date,
+			done_total,
+			normal_total,
+			done_count,
+			normal_count,
+			create_date
+		)
+		values
+		(
+			#{regTotal},
+			#{difference},
+			#{snapDate},
+			#{doneTotal},
+			#{normalTotal},
+			#{doneCount},
+			#{normalCount},
+			now()
+
+		)
+	</insert>
+
+
+</mapper>

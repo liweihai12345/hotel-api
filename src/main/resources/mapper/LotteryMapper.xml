@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.LotteryMapper">
+
+    <resultMap type="com.platform.entity.LotteryDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="price" column="price"/>
+        <result property="number" column="number"/>
+        <result property="type" column="type"/>
+        <result property="beginDate" column="begin_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="level" column="level"/>
+        <result property="rate" column="rate"/>
+        <result property="levelName" column="level_name"/>
+        <result property="createDate" column="create_dete"/>
+        <result property="required" column="required"/>
+        <result property="isSpc" column="is_spc"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.platform.entity.LotteryDO">
+		select
+			`id`,
+			`name`,
+			`price`,
+			`number`,
+			`type`,
+			`begin_date`,
+			`end_date`,
+			`level`,
+			`rate`,
+			`level_name`,
+			`create_date`,
+			`required`,
+			is_spc
+		from lottery
+		where id = #{id}
+	</select>
+
+    <select id="selectList" resultMap="resultMap">
+		select
+    		`id`,
+    		`name`,
+    		`price`,
+    		`number`,
+    		`type`,
+    		`begin_date`,
+    		`end_date`,
+    		`level`,
+    		`rate`,
+    		`level_name`,
+    		`create_date`,
+    		`required`,
+    		is_spc
+		FROM lottery
+        WHERE required=1 and `type` =#{type}
+	</select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from lottery
+        WHERE 1=1
+        <if test="name != null and name.trim() != ''">
+            AND name =#{name}
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.platform.entity.LotteryDO" useGeneratedKeys="true" keyProperty="id">
+		insert into lottery(
+			`name`,
+			`price`,
+			`number`,
+			`type`,
+			`begin_date`,
+			`end_date`,
+			`level`,
+			`rate`,
+			`level_name`,
+			`create_date`,
+			`required`)
+		values(
+			#{name},
+			#{price},
+			#{number},
+			#{type},
+			#{beginDate},
+			#{endDate},
+			#{level},
+			#{rate},
+			#{levelName},
+			now(),
+			#{required})
+	</insert>
+
+</mapper>

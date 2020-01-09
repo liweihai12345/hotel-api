@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.AuctionMapper">
+
+    <resultMap type="com.platform.entity.AuctionDO" id="auctionMap">
+        <result property="id" column="id"/>
+        <result property="pid" column="pid"/>
+        <result property="pname" column="pname"/>
+        <result property="deposit" column="deposit"/>
+        <result property="enrollStart" column="enroll_start"/>
+        <result property="enrollEnd" column="enroll_end"/>
+        <result property="beginTime" column="begin_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="basePrice" column="base_price"/>
+        <result property="cappedPrice" column="capped_price"/>
+        <result property="multiple" column="multiple"/>
+        <result property="createDate" column="create_date"/>
+        <result property="statu" column="statu"/>
+        <result property="sort" column="sort"/>
+    </resultMap>
+
+    <select id="selectDetail" resultMap="auctionMap">
+        SELECT
+        `id`,
+        `pid`,
+        `pname`,
+        `deposit`,
+        `enroll_start`,
+        `enroll_end`,
+        `begin_time` ,
+        `end_time` ,
+        `base_price` ,
+        `capped_price`,
+        `multiple`,
+        `create_date`,
+        `statu`,
+        `sort`
+        FROM auction
+        WHERE   id=#{aid}
+
+    </select>
+
+    <select id="selectList" resultMap="auctionMap">
+		select
+    		`id`,
+    		`pid`,
+    		`pname`,
+    		`deposit`,
+    		`enroll_start`,
+    		`enroll_end`,
+    		`begin_time`,
+    		`end_time`,
+    		`base_price`,
+    		`capped_price`,
+    		`multiple`,
+    		`create_date`,
+    		`statu`,
+    		`sort`
+		from auction where statu=1
+
+
+	</select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from auction
+        WHERE 1=1
+        <if test="name != null and name.trim() != ''">
+            AND name =#{name}
+        </if>
+    </select>
+
+
+    <update id="updateStatus">
+        update auction SET statu=0 where id=#{aid}
+    </update>
+
+    <select id="selectAuctionProductList" resultType="com.platform.vo.AuctionProductListVO">
+
+        SELECT p.id,
+        p.name,
+        p.price,
+        p.spc_price AS spcPrice,
+        p.old_price AS oldPrice,
+        p.describ,
+        p.image,
+        p.`number`,
+        a.`deposit` ,
+        a.`base_price` AS basePrice,
+        a.`enroll_start` AS enrollStart,
+        a.`enroll_end`AS enrollEnd,
+        a.`begin_time` AS beginTime,
+        a.`end_time` AS endTime,
+        a.id AS aid
+        FROM t_product_config AS p INNER JOIN auction AS a ON a.pid=p.id
+        ORDER BY aid DESC
+        <if test="start!=null and end != null">
+            limit #{start} , #{end}
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.DynamicCateMappingMapper">
+
+    <resultMap type="com.platform.entity.DynamicCateMappingDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="categoryid" column="categoryid"/>
+        <result property="newsid" column="newsid"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.platform.entity.DynamicCateMappingDO" useGeneratedKeys="true" keyProperty="id">
+		insert into dynamic_cate_mapping(
+			`categoryid`,
+			`newsid`)
+		values(
+			#{categoryid},
+			#{newsid})
+	</insert>
+
+    <delete id="deleteDynamic">
+		delete from dynamic_cate_mapping where newsid =#{did}
+	</delete>
+
+</mapper>

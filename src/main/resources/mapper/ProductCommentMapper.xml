@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.ProductCommentMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.OrderCommentDO" id="orderCommentMap">
+        <result property="orderNo" column="order_no"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="logo" column="logo"/>
+        <result property="proId" column="pro_id"/>
+        <result property="proName" column="pro_name"/>
+        <result property="proUrl" column="pro_url"/>
+        <result property="styleId" column="style_id"/>
+        <result property="styleName" column="style_name"/>
+        <result property="styleUrl" column="style_url"/>
+        <result property="number" column="number"/>
+        <result property="price" column="price"/>
+        <result property="commentImg" column="comment_img"/>
+        <result property="content" column="content"/>
+        <result property="statu" column="statu"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+    <insert id="insertAll" parameterType="java.util.List">
+        INSERT INTO t_order_comment (
+        order_no,
+        user_id,
+        user_name,
+        logo,
+        pro_id,
+        pro_name,
+        pro_url,
+        style_id,
+        style_name,
+        style_url,
+        number,
+        price,
+        comment_img,
+        content,
+        statu,
+        create_date
+        )
+        VALUES
+        <foreach collection="list" item="o" separator=",">
+            (
+            #{o.orderNo},
+            #{o.userId},
+            #{o.userName},
+            #{o.logo},
+            #{o.proId},
+            #{o.proName},
+            #{o.proUrl},
+            #{o.styleId},
+            #{o.styleName},
+            #{o.styleUrl},
+            #{o.number},
+            #{o.price},
+            #{o.commentImg},
+            #{o.content},
+            1,
+            now()
+            )
+        </foreach>
+    </insert>
+    <select id="selectCommentListByPid" resultType="com.platform.vo.ProductCommentListVO">
+        select
+          user_id as userId,
+          user_name as userName,
+          logo AS userPicture,
+          pro_name as proName,
+          comment_img as commentImg,
+          content,
+          create_date as createDate
+        from t_order_comment
+        WHERE pro_id = #{proId} and statu = 1
+        order by create_date desc
+        limit #{start},#{size}
+    </select>
+    <select id="selectCommentListCount" resultType="java.lang.Integer">
+        SELECT count(1) from t_order_comment
+        WHERE pro_id = #{proId} and statu = 1
+    </select>
+
+
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.EnergySnapshotMapper">
+
+    <resultMap type="com.platform.entity.EnergySnapshotDO" id="energySnapshotMap">
+        <result property="id" column="id"/>
+        <result property="total" column="total"/>
+        <result property="type" column="type"/>
+        <result property="typeName" column="type_name"/>
+        <result property="snapDate" column="snap_date"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+
+    <insert id="save" parameterType="com.platform.entity.EnergySnapshotDO" useGeneratedKeys="true" keyProperty="id">
+		insert into energy_snapshot(
+			`total`,
+			`type`,
+			`type_name`,
+			`snap_date`,
+			`create_date`)
+		values(
+			#{total},
+			#{type},
+			#{typeName},
+			#{snapDate},
+			#{createDate})
+	</insert>
+    <insert id="insertList">
+        insert into energy_snapshot(
+        `total`,
+        `type`,
+        `type_name`,
+        `snap_date`,
+        `create_date`)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.total},
+            #{item.type},
+            #{item.typeName},
+            #{item.snapDate},
+            now())
+        </foreach>
+    </insert>
+
+    <insert id="insertSpcList">
+        insert into account_snapshot_spc(
+        `total`,
+        `type`,
+        `type_name`,
+        `snap_date`,
+        `create_date`)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.total},
+            #{item.type},
+            #{item.typeName},
+            #{item.snapDate},
+            now())
+        </foreach>
+    </insert>
+
+</mapper>

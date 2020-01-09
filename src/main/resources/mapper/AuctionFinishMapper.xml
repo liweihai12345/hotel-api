@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.AuctionFinishMapper">
+
+    <resultMap type="com.platform.entity.AuctionFinishDO" id="auctionFinishMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="pid" column="pid"/>
+        <result property="pname" column="pname"/>
+        <result property="aid" column="aid"/>
+        <result property="bid" column="bid"/>
+        <result property="deposit" column="deposit"/>
+        <result property="status" column="status"/>
+        <result property="finishTime" column="finish_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="queryObject" resultMap="auctionFinishMap">
+        select
+        id,
+        `uid`,
+        `phone`,
+        `pname`,
+        `aid`,
+        `bid`,
+        `deposit`,
+        `status`
+        from auction_finish
+        where aid = #{aid}
+    </select>
+    <select id="selectRecordAcquire" resultType="com.platform.vo.AuctionFinishVO">
+		select
+			`uid`,
+			`phone`,
+			`pname`,
+			`aid`,
+			`bid`,
+			`deposit`,
+			`status`
+		from auction_finish
+		where aid = #{aid}
+	</select>
+    <select id="selectList" resultMap="auctionFinishMap">
+		select
+			`uid`,
+			`phone`,
+			`pname`,
+			`aid`,
+			`bid`,
+			`deposit`,
+			`status`
+		from auction_finish
+		where `status` =0 AND  end_time<![CDATA[<]]>#{endTime}
+	</select>
+
+
+    <insert id="save" parameterType="com.platform.entity.AuctionFinishDO" useGeneratedKeys="true" keyProperty="id">
+		insert into auction_finish(
+			`uid`,
+			`phone`,
+			`pid`,
+			`pname`,
+			`aid`,
+			`bid`,
+			`deposit`,
+			`status`,
+			`end_time`,
+			`create_time`)
+		values(
+			#{uid},
+			#{phone},
+			#{pid},
+			#{pname},
+			#{aid},
+			#{bid},
+			#{deposit},
+			#{status},
+			#{endTime},
+			#{createTime})
+	</insert>
+
+    <update id="updateStatus">
+		update auction_finish 
+		set `status` = #{status},  `finish_time` = now()
+		where aid = #{aid} and uid=#{userId}
+	</update>
+
+    <select id="selectFinishAuction" resultType="com.platform.vo.AuctionFinishVO">
+        select
+        aid,
+        `uid`,
+        `phone`,
+        `pname`,
+        `aid`,
+        `bid`,
+        `deposit`,
+        `status`
+        from auction_finish
+        where aid IN
+        <foreach collection="list" separator="," item="item" close=")" open="(">
+            #{item}
+        </foreach>
+    </select>
+
+</mapper>

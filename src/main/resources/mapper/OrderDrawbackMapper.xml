@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.OrderDrawBackMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.OrderDrawbackDO" id="resultMap">
+        <result property="orderNo" column="order_no"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="proId" column="pro_id"/>
+        <result property="proStatus" column="pro_status"/>
+        <result property="proStatusName" column="pro_status_name"/>
+        <result property="amount" column="amount"/>
+        <result property="backAmount" column="back_amount"/>
+        <result property="cause" column="cause"/>
+        <result property="explain" column="explain"/>
+        <result property="certificate" column="certificate"/>
+        <result property="statu" column="statu"/>
+        <result property="giveEnergy" column="give_energy"/>
+        <result property="spcFree" column="spc_free"/>
+        <result property="giveTeam" column="give_team"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="finishDate" column="finish_date"/>
+    </resultMap>
+
+
+    <select id="selectDrawback" resultMap="resultMap">
+        select * from t_order_drawback where order_no=#{orderno}
+    </select>
+
+    <insert id="insert" parameterType="com.platform.entity.OrderDrawbackDO" useGeneratedKeys="true" keyProperty="id">
+        insert into t_order_drawback
+        (
+        `order_no`,
+        `uid`,
+        `phone`,
+        pro_id,
+        pro_status,
+        pro_status_name,
+        amount,
+        back_amount,
+        cause,
+        `explain`,
+        certificate,
+        `give_energy`,
+        `spc_free`,
+        `give_team`,
+        statu,
+        create_date,
+        update_date
+        )
+        values
+        (
+        #{orderNo},
+        #{uid},
+        #{phone},
+        #{proId},
+        #{proStatus},
+        #{proStatusName},
+        #{amount},
+        #{backAmount},
+        #{cause},
+        #{explain},
+        #{certificate},
+        #{giveEnergy},
+         #{spcFree},
+         #{giveTeam},
+        1,
+        now(),
+        now()
+        )
+    </insert>
+
+
+</mapper>

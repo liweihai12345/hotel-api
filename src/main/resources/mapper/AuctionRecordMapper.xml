@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.AuctionRecordMapper">
+
+    <resultMap type="com.platform.entity.AuctionRecordDO" id="auctionRecordMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="aid" column="aid"/>
+        <result property="pid" column="pid"/>
+        <result property="pname" column="pname"/>
+        <result property="bid" column="bid"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+    <select id="checkCount" resultType="java.lang.Integer">
+		select count(*) from auction_record
+		where aid = #{aid} and uid=#{uid}
+	</select>
+    <select id="selectScrollTop" resultType="com.platform.vo.AuctionScrollVO">
+        SELECT id,phone,bid from auction_record where aid=#{aid} ORDER BY id DESC LIMIT 5
+    </select>
+    <select id="selectProductLatest" resultType="java.lang.Integer">
+        SELECT bid from auction_record where aid=#{aid} ORDER BY id DESC LIMIT 1
+    </select>
+    <select id="selectAuctionRecordList" resultType="com.platform.vo.AuctionRecordVO">
+        select
+        `uid`,
+        `phone`,
+        `aid`,
+        `pname`,
+        `bid`,
+        `create_date` AS createDate
+        from auction_record
+        WHERE aid=#{aid} order by id desc
+        limit #{start}, #{size}
+    </select>
+    <select id="selectHighest" resultType="com.platform.entity.AuctionRecordDO">
+        select id,
+        `uid`,
+        `phone`,
+        `aid`,
+        pid,
+        `pname`,
+        `bid`,
+        `create_date` AS createDate
+        from auction_record
+        WHERE aid=#{aid} and bid=#{maximum} order by id desc
+    </select>
+
+    <insert id="save" parameterType="com.platform.entity.AuctionRecordDO" useGeneratedKeys="true" keyProperty="id">
+		insert into auction_record(
+			`uid`,
+			`phone`,
+			`aid`,
+			`pid`,
+			`pname`,
+			`bid`,
+			`create_date`)
+		values(
+			#{uid},
+			#{phone},
+			#{aid},
+			#{pid},
+			#{pname},
+			#{bid},
+			now())
+	</insert>
+
+    <update id="update" parameterType="com.platform.entity.AuctionRecordDO">
+        update auction_record
+        <set>
+            <if test="uid != null">`uid` = #{uid},</if>
+            <if test="phone != null">`phone` = #{phone},</if>
+            <if test="aid != null">`aid` = #{aid},</if>
+            <if test="pid != null">`pid` = #{pid},</if>
+            <if test="pname != null">`pname` = #{pname},</if>
+            <if test="bid != null">`bid` = #{bid}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+
+</mapper>

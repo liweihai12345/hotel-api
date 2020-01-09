@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.CommissionMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.CommissionDO" id="resultMap">
+        <id property="id" column="id"/>
+        <result property="keycode" column="keycode"/>
+        <result property="value" column="value"/>
+        <result property="bakname" column="bakname"/>
+        <result property="createdDate" column="created_date"/>
+        <result property="updatedDate" column="updated_date"/>
+    </resultMap>
+    <select id="queryList" resultMap="resultMap">
+            select * from  t_commission
+	</select>
+    <select id="selectCommissionForKey" resultMap="resultMap">
+            select * from  t_commission WHERE keycode=#{key}
+	</select>
+    <select id="selectCommission" resultMap="resultMap">
+            select * from  t_commission WHERE keycode=#{key} limit 1
+	</select>
+
+</mapper>

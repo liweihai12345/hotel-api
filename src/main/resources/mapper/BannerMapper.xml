@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.platform.mapper.BannerMapper">
+
+    <sql id="select-banner">
+		select id, type, msg, file_url, view_flag,business,business_type, create_time,word
+	</sql>
+    <resultMap type="com.platform.vo.BannerVO" id="resultMap">
+        <id property="id" column="id"/>
+        <result property="type" column="type"/>
+        <result property="msg" column="msg"/>
+        <result property="fileUrl" column="file_url"/>
+        <result property="business" column="business"/>
+        <result property="businessType" column="business_type"/>
+        <result property="word" column="word"/>
+        <result property="otherUrl" column="other_url"/>
+        <result property="title" column="title"/>
+        <result property="shortTitle" column="short_title"/>
+    </resultMap>
+
+
+    <!-- 通过显示区域查询banner信息 -->
+    <select id="getBannerByType" resultMap="resultMap">
+        select id, type, msg, file_url,
+        view_flag,
+        business,
+        business_type,
+        create_time,
+        word ,
+        other_url ,
+        title,
+        short_title
+        from t_banner
+        <where>
+            <if test="type!=null">
+                and type=#{type}
+            </if>
+            <if test="viewFlag!=null">
+                and view_flag=#{viewFlag}
+            </if>
+            <if test="businessType!=null">
+                and business_type=#{businessType}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="queryList" resultMap="resultMap">
+        SELECT id,
+        type,
+        msg,
+        file_url,
+        view_flag,
+        business,
+        business_type,
+        create_time,
+        word,
+        other_url,
+        title,
+        short_title  FROM t_banner WHERE view_flag=1
+    </select>
+
+
+    <select id="selectHomeBanners" resultType="com.platform.vo.BannerVO">
+        SELECT b.id, b.type, b.msg, b.file_url AS fileUrl,
+        b.business,
+        b.business_type AS businessType,
+        h.sort,
+        b.word,
+        b.other_url AS otherUrl,
+        b.title,
+        b.short_title AS shortTitle
+        FROM
+        t_banner AS b
+        INNER JOIN home_config AS h ON b.id=h.bussnessid AND h.type=#{type}
+        WHERE b.id in
+        <foreach collection="bids" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+        AND b.view_flag=1
+        order by h.sort
+    </select>
+
+    <select id="selectHistoryRank" resultType="java.lang.String">
+        SELECT `image`  FROM banner_rank WHERE month_key=#{date}
+    </select>
+
+    <!--查询商户banner-->
+    <select id="selectMerchantBanner" resultType="com.platform.vo.MerchantBannerVO">
+         SELECT id,
+				mid,
+                title,
+                short_title AS shortTitle,
+                content,
+                word,
+                html_url AS htmlUrl,
+                image_url AS imageUrl,
+                business_type AS businessType,
+                business,
+                statu,
+                type, sort
+                FROM merchant_banner WHERE mid=#{mid} and statu=1
+    </select>
+</mapper>

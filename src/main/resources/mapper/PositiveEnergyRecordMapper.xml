@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.PositiveEnergyRecordMapper">
+
+
+    <resultMap type="com.platform.entity.PositiveEnergyRecordDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="energyId" column="energy_id"/>
+        <result property="energyName" column="energy_name"/>
+        <result property="energyValue" column="energy_value"/>
+        <result property="childUserId" column="child_user_id"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+    <select id="selectEnergyRecordList" resultMap="resultMap">
+        select *  from positive_energy_record where energy_id=#{type} and create_date BETWEEN #{startDate} and #{endDate}
+        limit #{start} ,#{size}
+    </select>
+    <select id="selectEnergyRecordCount" resultType="java.lang.Integer">
+        select count(1) from positive_energy_record where energy_id=#{type} and create_date BETWEEN #{startDate} and #{endDate}
+    </select>
+
+    <select id="selectTodayEnergy" resultType="com.platform.dto.EnergyRecordDTO">
+         select energy_id  AS energyId,COUNT(energy_id)AS num,IFNULL(SUM(energy_value),0) AS energyValue  from positive_energy_record
+         where user_id =#{userId} AND create_date BETWEEN #{startDate} and #{endDate} GROUP BY energy_id
+    </select>
+
+    <select id="selectUserRecordCount" resultType="java.lang.Integer">
+        select count(1) from positive_energy_record where user_id =#{userId} AND energy_id=#{energyId} and create_date BETWEEN #{startDate} and #{endDate}
+        <if test="childUserId != null">
+            and child_user_id=#{childUserId}
+        </if>
+    </select>
+    <select id="selectUserRecordSum" resultType="java.math.BigDecimal">
+        select IFNULL(sum(energy_value),0) from positive_energy_record where user_id =#{userId} AND energy_id=#{energyId} and create_date BETWEEN #{startDate} and #{startDate}
+    </select>
+
+
+    <insert id="insert" parameterType="com.platform.entity.PositiveEnergyRecordDO" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into positive_energy_record(
+        `user_id`,
+        `energy_id`,
+        `energy_name`,
+        `energy_value`,
+        `child_user_id`,
+        `create_date`)
+        values(
+        #{userId},
+        #{energyId},
+        #{energyName},
+        #{energyValue},
+        #{childUserId},
+        now())
+    </insert>
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.UserCashOutMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.UserCashOutDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="cashNo" column="cash_no"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="cardNo" column="card_no"/>
+        <result property="cardBank" column="card_bank"/>
+        <result property="openBank" column="open_bank"/>
+        <result property="amount" column="amount"/>
+        <result property="realName" column="real_name"/>
+        <result property="reservePhone" column="reserve_phone"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="createDate" column="create_date"/>
+        <result property="finishDate" column="finish_date"/>
+    </resultMap>
+	<insert id="save" parameterType="com.platform.entity.UserCashOutDO" useGeneratedKeys="true" keyProperty="id">
+		insert into t_cash_out
+		(   `cash_no`,
+		    `uid`,
+			`phone`,
+			`card_no`,
+			`card_bank`,
+			`open_bank`,
+			`amount`,
+			`real_name`,
+			`reserve_phone`,
+			`status`,
+			create_date
+		) values
+			(  #{cashNo},
+			    #{uid},
+				#{phone},
+				#{cardNo},
+				#{cardBank},
+				#{openBank},
+				#{amount},
+				#{realName},
+				#{reservePhone},
+				1,
+				now()
+			)
+	</insert>
+
+	<select id="queryObject" resultMap="resultMap">
+		select * from t_cash_out where id = #{id}
+	</select>
+
+    <select id="selectCashList" resultType="com.platform.vo.UserCashOutVO">
+        SELECT
+            id,
+            `cash_no` AS cashNo,
+		    `uid`,
+			`card_no` AS cardNo,
+			`card_bank` AS cardBank,
+			`open_bank` AS openBank,
+			`amount`,
+			`status`,
+			 create_date AS createDate
+			 from t_cash_out
+      where uid = #{userId}
+      order by create_date DESC
+      limit #{start},#{size}
+    </select>
+</mapper>

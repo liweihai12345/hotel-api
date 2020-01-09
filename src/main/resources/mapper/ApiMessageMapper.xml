@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.ApiMessageMapper">
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.vo.MessageVO" id="messageMap">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="msgImg" column="msg_img"/>
+        <result property="type" column="type"/>
+        <result property="pushType" column="push_type"/>
+        <result property="detail" column="detail"/>
+        <result property="status" column="statu"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="queryObject" resultMap="messageMap">
+		select * from t_message  where id = #{id} and statu=1
+	</select>
+    <select id="selectMessage" resultMap="messageMap">
+		select * from t_message  where statu=1 ORDER BY  create_time DESC limit 1
+	</select>
+
+    <select id="queryMessageList" resultType="com.platform.vo.MessageVO">
+        select id,title,msg_img AS  msgImg,type,push_type AS pushType,detail,statu AS `status`,create_time AS  createTime FROM t_message
+        where statu=1
+        ORDER BY  create_time DESC
+        <if test="startIndex >= 0 and size > 0">
+            limit #{startIndex}, #{size}
+        </if>
+    </select>
+
+    <select id="checkMessage" resultType="java.lang.Boolean">
+        select count(1) from t_meaage_mapping  where mid=#{mid} and uid=#{userId} and type=#{type}
+    </select>
+
+    <insert id="saveMessageMapping"  >
+        		INSERT into t_meaage_mapping(  mid,uid, `type`, create_date)
+		        VALUES (#{mid}, #{userId}, #{type}, now())
+    </insert>
+</mapper>

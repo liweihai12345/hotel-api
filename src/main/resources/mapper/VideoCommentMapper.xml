@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.VideoCommentMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.CommentDO" id="commentMap">
+        <result property="id" column="id"/>
+        <result property="studyVideoId" column="study_video_id"/>
+        <result property="partnerId" column="partner_id"/>
+        <result property="imgUrl" column="img_url"/>
+        <result property="type" column="type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="msg" column="msg"/>
+        <result property="userLogo" column="user_logo"/>
+        <result property="userName" column="user_name"/>
+    </resultMap>
+
+    <select id="getCommentList" resultMap="commentMap">
+        select *  from t_comment c  where c.type = #{type} and c.study_video_id=#{vid}
+        <if test="size >0">
+            limit #{startIndex}, #{size}
+        </if>
+    </select>
+
+
+    <insert id="save" parameterType="com.platform.entity.CommentDO" useGeneratedKeys="true" keyProperty="id">
+		insert into t_comment ( study_video_id,
+			partner_id,
+			img_url,
+			`type`,
+			`msg`,
+			`user_logo`,
+			`user_name`
+		) values (
+			#{studyVideoId},
+			#{partnerId},
+			#{imgUrl},
+			#{type},
+			#{msg},
+			#{userLogo},
+			#{userName} )
+	</insert>
+
+
+</mapper>

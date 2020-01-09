@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.platform.mapper.ProductCategoryMapper">
+
+
+    <select id="selectHomeCate" resultType="com.platform.vo.CostListVO">
+        select
+        c.`id`,
+        c.`name`,
+        c.image_url AS imageUrl,
+        h.sort
+        from pro_category AS c INNER JOIN home_config AS h
+        ON c.id=h.bussnessid AND h.type=#{type}
+        WHERE c.id in
+        <foreach collection="bids" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+        order by sort
+    </select>
+
+    <select id="selectProCateList" resultType="com.platform.vo.ProductCateVO">
+		SELECT
+		id ,
+		name  ,
+		parent_id  AS parentId,
+		image_url  AS imageUrl,
+		sort_order  AS sortOrder
+		FROM  pro_category where `show`= 1 ORDER BY id,sort_order
+	</select>
+
+    <select id="selectStyleList" resultType="com.platform.vo.ProductStyleVO">
+        select
+        `id`,
+        `name`,
+        `price`,
+         spc_price AS  spcPrice,
+         old_price AS  oldPrice,
+        `image_url` AS  imageUrl,
+         dimensions,
+         give_energy AS giveEnergy,
+         spc_free AS spcFree,
+         give_team AS giveTeam
+        from pro_style	WHERE pid=#{pid}
+    </select>
+    <select id="selectStyle" resultType="com.platform.vo.ProductStyleVO">
+        select
+        `id`,
+        `name`,
+        `price`,
+         spc_price AS  spcPrice,
+         old_price AS  oldPrice,
+         dimensions,
+        `image_url` AS  imageUrl,
+         give_energy AS giveEnergy,
+         spc_free AS spcFree,
+         give_team AS giveTeam
+        from pro_style	WHERE id=#{sid}
+    </select>
+
+    <select id="selectProCateById" resultType="com.platform.entity.ProCategoryDO">
+        SELECT	id,name,parent_id AS parentId,image_url AS imageUrl,sort_order AS sortOrder,rate FROM 	pro_category
+        WHERE id = ( SELECT cate_id FROM product_cate_mapping WHERE product_id = #{pid} )
+    </select>
+</mapper>

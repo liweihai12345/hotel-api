@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.platform.mapper.SpreadRankMapper">
+
+    <sql id="select-spreadRank">
+		select id, user_id AS userId,user_name AS userName,user_logo AS userLogo,phone,
+		ranking ,team_id AS teamId, update_date AS updateTime ,team_name AS teamName ,team_count AS teamCount
+	</sql>
+    <select id="getSpreadRankById" resultType="com.platform.entity.SpreadRankDO">
+        <include refid="select-spreadRank"/>
+        from t_spread_rank where id=#{id}
+    </select>
+
+    <select id="getSpreadRankList" resultType="com.platform.entity.SpreadRankDO">
+        <include refid="select-spreadRank"/>
+        from t_spread_rank  where team_count>0 AND `status`=1
+        order by ranking,id asc
+        limit #{start},#{size}
+    </select>
+
+    <insert id="updateSpreadRank" parameterType="java.util.List">
+        insert into t_spread_rank (user_id, user_name,user_logo,phone,ranking,team_id,team_name,team_count)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.userId}, #{item.userName},#{item.userLogo},#{item.phone},#{item.ranking},#{item.teamId},#{item.teamName},#{item.teamCount})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        user_name = user_name,
+        user_logo = user_logo,
+        ranking = ranking,
+        team_count = team_count
+    </insert>
+    <insert id="addSpreadRank" parameterType="java.util.List">
+        insert into t_spread_rank (user_id, user_name,user_logo,phone,ranking,team_id,team_name,team_count)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.userId}, #{item.userName},#{item.userLogo},#{item.phone},#{item.ranking},#{item.teamId},#{item.teamName},#{item.teamCount})
+        </foreach>
+    </insert>
+    <select id="getMyRank" resultType="com.platform.entity.SpreadRankDO">
+        <include refid="select-spreadRank"/>
+        from t_spread_rank where user_id=#{uid}
+    </select>
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(1) from t_spread_rank
+    </select>
+    <select id="selectNoSpreadRankUser" resultType="com.platform.entity.SpreadRankDO">
+        SELECT
+            tw.user_id AS userId,
+            u.`name` AS userName,
+            u.picture_url AS userLogo,
+            u.mobile AS phone,
+            tw.sub_team_id AS teamId,
+             0 AS teamCount
+        FROM
+            t_team_with_user AS tw
+        INNER JOIN t_partner AS u ON tw.user_id = u.id
+        AND u.status = 1
+        WHERE u.id not in(select user_id from t_spread_rank) AND
+            tw.enable = 1
+        ORDER BY user_id
+    </select>
+</mapper>

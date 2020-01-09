@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.DynamicPraiseMapper">
+
+
+    <select id="selectPraiseDidList" resultType="java.lang.Long">
+        select newsid FROM dynamic_praise where userid = #{userId} and  newsid in
+        <foreach collection="list" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+    </select>
+    <!--查看点赞-->
+    <update id="updatePraise" parameterType="java.lang.Long">
+        update dynamic_praise
+        set `see` = 1
+        where id = #{id}
+    </update>
+
+
+    <select id="selectPraiseList" resultType="com.platform.dto.DynamicPraiseDTO">
+        select userid,newsid FROM dynamic_praise where newsid in
+        <foreach collection="list" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+    </select>
+    <!--查询我点过的赞-->
+    <select id="selectPraiseForUid" resultType="java.lang.Long">
+        select newsid FROM dynamic_praise where newsid =#{uid}
+    </select>
+    <!--查询我的新增赞-->
+    <select id="praiseAddCount" resultType="java.lang.Integer">
+         SELECT count(p.id) FROM dynamic_praise AS p
+        INNER JOIN user_dynamic AS d ON p.newsid =d.id
+        where d.authorid = #{userid} AND p.see=0
+    </select>
+    <!--校验赞-->
+    <select id="checkPriaise" resultType="java.lang.Boolean">
+        select count(1) FROM dynamic_praise where userid =#{userId} AND newsid=#{cid}
+    </select>
+    <insert id="insert" parameterType="com.platform.entity.DynamicPraiseDO" keyProperty="id" useGeneratedKeys="true">
+        INSERT  INTO dynamic_praise(newsid,userid,type,see,create_date)VALUES (#{newsid},#{userid},#{type},#{see},now())
+    </insert>
+    <delete id="delete">
+        DELETE  from dynamic_praise where  userid =#{userId} and newsid=#{cid}
+    </delete>
+    <!--查询点赞列表-->
+    <select id="praiseListByUserId"  resultType="com.platform.vo.PraiseVO">
+
+        SELECT
+        d.id AS did,
+        d.newdes ,
+        d.image_url AS imageUrl,
+        u.id AS uid ,
+        u.name ,
+        d.type,
+        u.picture_url AS logo,
+        p.create_date AS createDate,
+        p.id,
+        p.see
+        FROM
+        dynamic_praise AS p
+        INNER JOIN user_dynamic AS d ON p.newsid =d.id
+        INNER JOIN t_partner AS u ON p.userid = u.id
+        where d.authorid = #{userId}
+        limit #{start}, #{size}
+
+    </select>
+
+    <!--点赞-极速处理-->
+    <update id="readPraiseAll" parameterType="java.lang.Long">
+        UPDATE dynamic_praise AS p
+        INNER JOIN  user_dynamic AS d  ON p.newsid=d.id
+        set p.see = 1
+        WHERE d.authorid = #{userid} AND p.see = 0
+    </update>
+    <delete id="deleteDynamic">
+        DELETE  from dynamic_praise where newsid=#{did}
+    </delete>
+</mapper>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.AuctionEnrollMapper">
+
+    <resultMap type="com.platform.entity.AuctionEnrollDO" id="auctionEnrollMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="aid" column="aid"/>
+        <result property="pid" column="pid"/>
+        <result property="pname" column="pname"/>
+        <result property="deposit" column="deposit"/>
+        <result property="statu" column="statu"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.platform.entity.AuctionEnrollDO">
+		select
+			`id`,
+			`uid`,
+			`phone`,
+			`aid`,
+			`pid`,
+			`pname`,
+			`deposit`,
+			`statu`,
+			`create_date`
+		from auction_enroll
+		where id = #{id}
+	</select>
+
+	<select id="selectEnrollRecordList" resultType="com.platform.vo.AuctionRecordVO">
+		select
+    		`uid`,
+    		`phone`,
+    		`aid`,
+    		`pname`,
+    		`deposit` AS  bid,
+    		`create_date` AS  createDate
+		from auction_enroll
+		WHERE aid=#{aid} order by id desc
+        limit #{start}, #{size}
+	</select>
+	
+ 	<select id="checkEnroll" resultType="java.lang.Boolean">
+		select count(*) from auction_enroll
+		WHERE  aid =#{aid} and uid =#{userId}
+
+	</select>
+    <select id="selectEnrollCount" resultType="java.lang.Integer">
+        select count(*) from auction_enroll
+		WHERE  aid =#{aid}
+    </select>
+
+    <insert id="save" parameterType="com.platform.entity.AuctionEnrollDO" useGeneratedKeys="true" keyProperty="id">
+		insert into auction_enroll(
+			`uid`,
+			`phone`,
+			`aid`,
+			`pid`,
+			`pname`,
+			`deposit`,
+			`statu`,
+			`create_date`)
+		values(
+			#{uid},
+			#{phone},
+			#{aid},
+			#{pid},
+			#{pname},
+			#{deposit},
+			#{statu},
+			now())
+	</insert>
+	 
+	<update id="updateStatus">
+		update auction_enroll 
+		set `statu` = #{status}
+		where uid in
+		<foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+	</update>
+    <select id="selectEnrollBackList" resultType="java.lang.Long">
+        select `uid` from auction_enroll
+        WHERE aid=#{aid} and statu=0
+    </select>
+    <update id="updateEnrollStatus">
+        update auction_enroll
+        set `statu` = #{status}
+        where aid=#{aid} and uid =#{uid}
+    </update>
+</mapper>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.CommunityMapper">
+
+    <resultMap type="com.platform.vo.CommCateVO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="sort" column="sort_order"/>
+    </resultMap>
+
+
+    <!--查询社区分类-->
+    <select id="selectCateList" resultMap="resultMap">
+		select
+    		`id`,
+    		`name`,
+			`sort_order`
+		from dynamic_category WHERE  enabled=1 ORDER BY sort_order ASC
+	</select>
+    <!--分类查询动态关联关系-->
+    <select id="selectMappingList" resultType="com.platform.entity.DynamicCateMappingDO">
+		select newsid,categoryid from dynamic_cate_mapping WHERE categoryid=#{cid} ORDER BY id DESC limit #{start},#{size}
+	</select>
+    <!--//用户个人动态-->
+    <select id="selectCommunityList" resultType="com.platform.vo.DynamicVO">
+        SELECT c.id ,c.newdes ,
+        c.praise AS praise,
+        c.comments,
+        c.type,
+        c.image_url AS imageUrl,
+        p.id AS uid ,
+        p.name ,p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+        WHERE c.id in
+        <foreach collection="list" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+        order by c.createdAt desc
+    </select>
+    <!--//用户个人关注-->
+    <select id="selectMyFocusList" resultType="com.platform.vo.DynamicVO">
+          SELECT c.id ,
+        c.newdes ,
+        c.praise AS praise,
+        c.comments,
+        c.type,
+        c.image_url AS imageUrl,
+        p.id AS uid ,
+        p.name ,
+        p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+		INNER JOIN dynamic_focus AS f ON f.touser_id=c.authorid
+        WHERE   f.user_id=#{uid} AND c.enabled=1
+        order by c.createdAt desc
+        limit #{start},#{size}
+    </select>
+    <!--蜕变-->
+    <select id="selectCommunityDecayList" resultType="com.platform.vo.DynamicVO">
+        SELECT
+        c.id ,
+        c.newdes ,
+        c.praise,
+        c.type,
+        c.comments,
+        c.image_url AS imageUrl,
+        p.id AS uid ,
+        p.name ,
+        p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+        INNER JOIN dynamic_cate_mapping  AS m on c.id =m.newsid
+        where m.categoryid=#{cid} AND (c.authorid=#{uid} OR c.enabled=1)
+        order by c.createdAt desc
+        limit #{start},#{size}
+    </select>
+
+    <!--视频列表:查看用户-->
+    <select id="selectVideoListForUid" resultType="com.platform.vo.DynamicVO">
+        SELECT c.id ,c.newdes ,
+        c.praise AS praise,
+        c.comments,
+        c.type,
+        c.collect,
+        c.image_url AS imageUrl,
+        p.id AS uid ,
+        p.name ,p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+        WHERE c.type = 2
+        AND c.authorid = #{uid}
+        AND c.id <![CDATA[<=]]> #{dynamicId}
+        <if test="isMe == 0">
+            AND c.enabled=1
+        </if>
+        order by c.id desc
+        limit #{start},#{size}
+    </select>
+    <!--视频列表: 根据ids查询-->
+    <select id="selectVideoListForIds" resultType="com.platform.vo.DynamicVO">
+        SELECT c.id ,c.newdes ,
+        c.praise AS praise,
+        c.comments,
+        c.collect,
+        c.type,
+        c.image_url AS imageUrl,
+        p.id AS uid ,
+        p.name ,p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+        WHERE
+        c.type = 2 AND c.enabled=1
+        AND
+        c.id in
+        <foreach collection="list" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+        AND c.id <![CDATA[<=]]> #{dynamicId}
+        order by c.id desc
+        limit #{start},#{size}
+    </select>
+    <select id="selectFocusVideoListForUid" resultType="com.platform.vo.DynamicVO">
+       SELECT c.id ,
+        c.newdes ,
+        c.praise AS praise,
+        c.comments,
+        c.collect,
+        c.type,
+        c.image_url AS imageUrl,
+        p.id AS uid ,
+        p.name ,
+        p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+        WHERE   c.authorid=#{uid} AND c.enabled=1
+        AND c.type = 2 AND c.enabled=1
+        AND c.createdAt <![CDATA[<=]]> #{date}
+        order by c.id desc
+        limit #{start},#{size}
+    </select>
+    <select id="selectCollectVideoListForUid" resultType="com.platform.vo.DynamicVO">
+       SELECT
+        c.id ,
+        c.newdes ,
+        c.praise AS praise,
+        c.comments,
+        c.collect,
+        c.type,
+        c.image_url AS imageUrl,
+        p.id AS uid ,
+        p.name ,
+        p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+		INNER JOIN user_dynamic_collect AS f ON f.dynamic_id=c.id
+        WHERE  f.user_id=#{uid}
+        AND c.type = 2 AND c.enabled=1
+        AND c.createdAt <![CDATA[<=]]> #{date}
+        order by c.id desc
+        limit #{start},#{size}
+    </select>
+    <select id="selectVideForDid" resultType="com.platform.vo.DynamicVO">
+        SELECT
+        c.id ,
+        c.newdes ,
+        c.praise AS praise,
+        c.comments,
+        c.collect,
+        c.type,
+        c.image_url AS imageUrl,
+        p.id AS uid ,
+        p.name ,
+        p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+		WHERE
+		c.id = #{dynamicId}
+    </select>
+    <select id="selectVideoListForCid" resultType="com.platform.vo.DynamicVO">
+         SELECT
+        c.id ,
+        c.newdes ,
+        c.praise AS praise,
+        c.comments,
+        c.collect,
+        c.type,
+        c.image_url AS imageUrl,
+        p.id AS uid ,
+        p.name ,
+        p.picture_url AS logo,
+        c.createdAt AS createDate
+        FROM user_dynamic AS c
+        INNER JOIN t_partner as p ON c.authorid =p.id
+		INNER JOIN dynamic_cate_mapping AS dcm ON c.id = dcm.newsid
+		WHERE
+		dcm.categoryid = #{cid}
+		AND c.type = 2
+        <if test="isMe == 0">
+            AND c.enabled=1
+        </if>
+        AND c.id <![CDATA[<=]]> #{dynamicId}
+        order by c.id desc
+        limit #{start},#{size}
+    </select>
+</mapper>

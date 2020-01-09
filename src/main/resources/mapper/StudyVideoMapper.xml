@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.StudyVideoMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.StudyVideoDO" id="resultMap">
+
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="imgUrl" column="image_url"/>
+        <result property="videoUrl" column="video_url"/>
+        <result property="type" column="type"/>
+        <result property="msg" column="msg"/>
+        <result property="longTime" column="duration"/>
+        <result property="isShow" column="view_flag"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+
+    <select id="queryList" resultMap="resultMap">
+        select id,title ,image_url,video_url,msg,type,duration,view_flag,create_time from t_study_video
+        <if test="startIndex >=0 and size != 0">
+            limit #{startIndex}, #{size}
+        </if>
+    </select>
+
+    <select id="queryObject" resultMap="resultMap">
+        select id,title ,image_url,video_url,type,duration,view_flag,create_time from t_study_video where id=#{id}
+    </select>
+
+
+</mapper>

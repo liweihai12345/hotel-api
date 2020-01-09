@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.LotteryRecordMapper">
+
+    <resultMap type="com.platform.entity.LotteryRecordDO" id="lotteryRecordMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="lotteryId" column="lottery_id"/>
+        <result property="lotteryName" column="lottery_name"/>
+        <result property="level" column="level"/>
+        <result property="levelName" column="level_name"/>
+        <result property="type" column="type"/>
+        <result property="price" column="price"/>
+        <result property="spend" column="spend"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+    <select id="queryObject" resultMap="lotteryRecordMap">
+		select
+			`id`,
+			`name`,
+			`uid`,
+			`phone`,
+			`lottery_id`,
+			`lottery_name`,
+			`level`,
+			`level_name`,
+			`type`,
+			`price`,
+			`spend`,
+			`create_date`
+		from lottery_record
+		where id = #{id}
+	</select>
+
+    <select id="selectLotteryList" resultType="com.platform.vo.LotteryVO">
+		select
+        `name`,
+         lottery_name AS lotteryName,
+        `phone`,
+        `level`,
+        `level_name` AS levelName,
+        `price`,
+        create_date AS createDate
+		from lottery_record
+		WHERE uid =#{uid}
+		ORDER BY id DESC
+        limit #{start}, #{size}
+
+	</select>
+
+    <select id="selectLotteryListbytype" resultType="com.platform.vo.LotteryVO">
+        select
+        lottery_record.`name`,
+        lottery_record.lottery_name AS lotteryName,
+        lottery_record.`phone`,
+        lottery_record.`level`,
+        lottery_record.`level_name` AS levelName,
+        lottery_record.`price`,
+        lottery_record.create_date AS createDate
+        from lottery_record INNER JOIN  lottery on lottery_record.lottery_id = lottery.id
+		where lottery.type = #{type} and  lottery_record.uid =#{uid}
+        ORDER BY lottery_record.id DESC
+         limit #{start}, #{size}
+
+
+
+	</select>
+
+    <select id="selectLotteryScrollList" resultType="com.platform.vo.LotteryVO">
+        select
+        `name`,
+         lottery_name AS lotteryName,
+        `phone`,
+        `level`,
+        `level_name` AS levelName,
+        `price`
+        from lottery_record
+        ORDER BY id DESC
+        limit #{start}, #{size}
+
+    </select>
+
+	<select id="selectLotteryScrollListbytype" resultType="com.platform.vo.LotteryVO">
+       select
+        lottery_record.`name`,
+         lottery_record.lottery_name AS lotteryName,
+        lottery_record.`phone`,
+        lottery_record.`level`,
+        lottery_record.`level_name` AS levelName,
+        lottery_record.`price`
+        from lottery_record INNER JOIN  lottery on lottery_record.lottery_id = lottery.id
+				where lottery.type = #{type}
+        ORDER BY lottery_record.id DESC
+        limit #{start}, #{size}
+
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from lottery_record
+        WHERE 1=1
+        <if test="name != null and name.trim() != ''">
+            AND name =#{name}
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.platform.entity.LotteryRecordDO" useGeneratedKeys="true" keyProperty="id">
+		insert into lottery_record(
+			`name`,
+			`uid`,
+			`phone`,
+			`lottery_id`,
+			`lottery_name`,
+			`level`,
+			`level_name`,
+			`type`,
+			`price`,
+			`spend`,
+			`create_date`)
+		values(
+			#{name},
+			#{uid},
+			#{phone},
+			#{lotteryId},
+			#{lotteryName},
+			#{level},
+			#{levelName},
+			#{type},
+			#{price},
+			#{spend},
+			now())
+	</insert>
+
+
+</mapper>

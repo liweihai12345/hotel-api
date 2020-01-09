@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.NotificationMapper">
+
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.NotificationDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="ticker" column="ticker"/>
+        <result property="title" column="title"/>
+        <result property="body" column="body"/>
+        <result property="linkUrl" column="link_url"/>
+        <result property="targetType" column="target_type"/>
+        <result property="key" column="key"/>
+        <result property="type" column="type"/>
+        <result property="sendTime" column="send_time"/>
+        <result property="createDate" column="create_date"/>
+
+    </resultMap>
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.NotificationRecordDO" id="recordMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="ticker" column="ticker"/>
+        <result property="title" column="title"/>
+        <result property="body" column="body"/>
+        <result property="linkUrl" column="link_url"/>
+        <result property="targetType" column="target_type"/>
+        <result property="type" column="type"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+
+    <select id="selectNotificationList" resultMap="resultMap">
+		select * from notification
+	</select>
+    <select id="selectRecordById" resultMap="recordMap">
+		select * from notification where id = #{id}
+	</select>
+
+    <insert id="insert" parameterType="com.platform.entity.NotificationRecordDO" useGeneratedKeys="true"
+            keyProperty="id">
+		insert into notification_record
+		(
+			`uid`,
+			`ticker`,
+			`title`,
+			`body`,
+			`type`,
+			`link_url`,
+			`target_type`,
+			`create_date`
+		)
+		values
+		(
+			#{uid},
+			#{ticker},
+			#{title},
+			#{body},
+			#{type},
+			#{linkUrl},
+			#{targetType},
+			now()
+		)
+	</insert>
+
+</mapper>

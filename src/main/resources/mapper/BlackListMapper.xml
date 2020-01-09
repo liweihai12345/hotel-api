@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.BlackListMapper">
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.BlackListDO" id="resultMap">
+        <result property="uid" column="uid"/>
+        <result property="blackUid" column="black_uid"/>
+        <result property="blackName" column="black_name"/>
+        <result property="blackLogo" column="black_logo"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+
+    <select id="selectList" resultMap="resultMap">
+        select * from blacklist where uid=#{uid}
+        limit #{start}, #{size}
+    </select>
+    <select id="check" resultType="java.lang.Integer">
+        select count(1) from blacklist where uid=#{myuid} and black_uid=#{uid}
+    </select>
+    <select id="selectBlackMeIds" resultType="java.lang.Long">
+        select uid from blacklist where black_uid = #{uid}
+    </select>
+    <select id="selectMyBlackList" resultType="java.lang.Long">
+        select black_uid from blacklist where uid = #{uid}
+    </select>
+
+    <insert id="save" parameterType="com.platform.entity.BlackListDO" useGeneratedKeys="true" keyProperty="id">
+		insert into blacklist(
+			`uid`,
+			`black_uid`,
+			`black_name`,
+			`black_logo`,
+			`create_date`)
+		values(
+			#{uid},
+			#{blackUid},
+			#{blackName},
+			#{blackLogo},
+			now())
+	</insert>
+
+    <delete id="delete">
+		delete from blacklist where uid = #{myuid} and black_uid=#{uid}
+	</delete>
+</mapper>

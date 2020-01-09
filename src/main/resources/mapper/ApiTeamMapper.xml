@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.platform.mapper.ApiTeamMapper">
+
+    <sql id="select-team">
+		select id, name, create_time AS createTime
+	</sql>
+    <insert id="addTeamWithUser" parameterType="com.platform.entity.TeamWithUserDO"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT into t_team_with_user(
+		user_id,parent_team_id,sub_team_id )VALUES
+		(#{userId},#{parentTeamId},#{subTeamId})
+	</insert>
+    <insert id="addTeam" parameterType="com.platform.entity.TeamDO"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT into t_team( name )VALUES (
+		#{name})
+	</insert>
+
+
+    <select id="selectTeamList" resultType="com.platform.entity.SpreadRankDO">
+		SELECT tw.user_id AS userId,
+		u.`name` AS userName,
+		u.picture_url AS userLogo,
+		u.mobile AS phone,
+		tw.sub_team_id AS teamId,
+		IFNULL(temp.team_count,0) AS teamCount
+		FROM t_team_with_user AS tw
+        INNER JOIN t_partner AS u ON tw.user_id=u.id AND u.status=1
+        INNER JOIN( SELECT parent_team_id,COUNT(1) AS team_count FROM t_team_with_user  WHERE parent_team_id<![CDATA[<>]]>0 GROUP BY parent_team_id) AS temp
+            ON tw.sub_team_id=temp.parent_team_id
+            WHERE tw.enable=1
+        ORDER BY temp.team_count DESC,tw.sub_team_id ASC
+	</select>
+
+    <!--<select id="selectTeamRank" resultType="com.platform.entity.DoneUserDO">-->
+        <!--select count(1)  AS counts,b.teamId  from (-->
+        <!--select tu.parent_team_id AS teamId from  t_team_with_user AS tu-->
+        <!--INNER JOIN t_partner AS p ON p.id=tu.user_id AND p.isd_one=1 AND tu.parent_team_id <![CDATA[<>]]> 0)AS b-->
+        <!--GROUP BY teamId ORDER  BY counts DESC-->
+	<!--</select>-->
+    <select id="selectMyTeamCount" resultType="java.lang.Integer">
+		SELECT count(1) FROM t_team_with_user  WHERE parent_team_id=#{tid}
+	</select>
+
+    <select id="selectMyParentTeam" resultType="com.platform.entity.TeamWithUserDO">
+  		SELECT tu.user_id AS userId,tu.sub_team_id AS parentTeamId, tw.sub_team_id  AS subTeamId
+  		FROM t_team_with_user AS tu
+        INNER JOIN t_team_with_user AS tw  ON
+         tu.sub_team_id = tw.parent_team_id
+        AND tw.user_id=#{uid}
+	</select>
+    <select id="selectTeamUserList" resultType="com.platform.vo.MyTeamUserVO">
+        SELECT p.id,p.`name`,p.mobile,p.picture_url AS pictureUrl,p.isd_one AS isDone,p.invite ,tu.create_date AS createdDate from t_partner AS p
+  		INNER JOIN  t_team_with_user AS tu ON p.id=tu.user_id AND tu.parent_team_id=#{tid}
+  		ORDER BY p.isd_one DESC,p.create_time DESC
+  		limit #{index},#{size}
+	</select>
+
+
+    <select id="selectTeamByUid" resultType="com.platform.vo.TeamVO">
+        select t.id,t.`name` ,tu.user_id AS  uid,tu.parent_team_id AS  parentId
+        FROM t_team AS t INNER JOIN  t_team_with_user tu  ON t.id= tu.sub_team_id WHERE tu.user_id=#{uid}
+    </select>
+    <select id="selectTeamBindCount" resultType="java.lang.Integer">
+        select count(1) FROM  t_team_with_user   WHERE parent_team_id=#{tid} and update_date <![CDATA[>]]> #{date}
+    </select>
+
+
+    <update id="bindTeamMapping">
+        update  t_team_with_user
+        SET  parent_team_id =#{tid},
+        update_date=now()
+        where user_id=#{userId}
+    </update>
+    <select id="selectParentTeamUser" resultType="com.platform.vo.MyTeamUserVO" parameterType="java.lang.Integer">
+        SELECT p.id,p.`name`,p.mobile,p.picture_url AS pictureUrl,p.isd_one AS isDone,p.invite ,tu.create_date AS createdDate from t_partner AS p
+        INNER JOIN  t_team_with_user AS tu ON p.id=tu.user_id AND tu.sub_team_id=#{tid}
+    </select>
+
+    <!--查询上级团队-->
+    <select id="selectParentTeamList" resultType="com.platform.dto.TeamUserDTO">
+        SELECT
+        u.id AS uid,
+        u.mobile,
+        u.isd_one AS done,
+        tu.sub_team_id AS teamId
+        FROM
+        t_team_with_user AS tu INNER JOIN t_partner AS u ON u.id=tu.user_id
+        WHERE
+        tu.sub_team_id in
+        <foreach collection="list" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+    </select>
+    <select id="checkChildTeam" resultType="java.lang.Integer">
+                 SELECT count(1) FROM t_team_with_user
+                WHERE user_id = #{userId}
+                AND parent_team_id = ( SELECT sub_team_id
+                                    FROM t_team_with_user
+                                    WHERE user_id = #{myid} )
+    </select>
+
+    <select id="selectTeamDone" resultType="java.lang.Integer">
+        SELECT count(1) FROM t_team_with_user AS t INNER  JOIN t_partner AS  p ON t.user_id=p.id
+        WHERE t.parent_team_id= #{tid} and p.isd_one>0
+    </select>
+    <select id="selectMyTeamIdList" resultType="java.lang.Long">
+        SELECT user_id  from  t_team_with_user where parent_team_id=#{tid}
+	</select>
+
+    <select id="selectTeamRecommendList" resultType="com.platform.entity.TeamRecommendDO">
+        SELECT uid,user_name as userName,logo,phone,tid,sort_order AS sortOrder,create_date as createDate  from  team_recommend
+        order by sort_order
+        limit #{start},#{size}
+	</select>
+</mapper>

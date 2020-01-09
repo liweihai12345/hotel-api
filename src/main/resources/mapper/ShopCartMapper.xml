@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.ShopCartMapper">
+
+    <resultMap type="com.platform.entity.ShopCartDO" id="resultMap">
+
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="pid" column="pid"/>
+        <result property="pname" column="pname"/>
+        <result property="proUrl" column="pro_url"/>
+        <result property="styleid" column="styleid"/>
+        <result property="styleName" column="style_name"/>
+        <result property="styleUrl" column="style_url"/>
+        <result property="description" column="description"/>
+        <result property="mid" column="mid"/>
+        <result property="merchantName" column="merchant_name"/>
+        <result property="number" column="number"/>
+        <result property="type" column="type"/>
+        <result property="dimensions" column="dimensions"/>
+        <result property="price" column="price"/>
+        <result property="spcPrice" column="spc_price"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+
+
+    <select id="selectMyShopCart" resultType="com.platform.entity.ShopCartDO">
+        SELECT
+        c.id,
+        c.uid,
+        c.pid,
+        c.pname,
+        c.pro_url AS proUrl,
+        c.styleid,
+        c.description,
+        c.mid,
+        c.merchant_name AS merchantName,
+        c.number,
+        c.type,
+        c.dimensions,
+        ps.`name` AS styleName,
+        ps.image_url AS styleUrl,
+        ps.price,
+        ps.spc_price AS spcPrice,
+        ps.give_energy AS giveEnergy,
+        ps.spc_free AS spcFree,
+        ps.give_team AS giveTeam,
+        c.create_date AS createDate
+        FROM shop_cart AS c
+        INNER JOIN pro_style AS ps ON c.styleid = ps.id
+        WHERE  c.uid=#{uid}
+    </select>
+
+    <select id="getSelectShopCart" resultType="com.platform.entity.ShopCartDO">
+        SELECT
+        c.id,
+        c.uid,
+        c.pid,
+        c.pname,
+        c.pro_url AS proUrl,
+        c.styleid,
+        c.description,
+        c.mid,
+        c.merchant_name AS merchantName,
+        c.number,
+        c.type,
+        c.dimensions,
+        ps.`name` AS styleName,
+        ps.image_url AS styleUrl,
+        ps.price,
+        ps.spc_price AS spcPrice,
+        ps.`give_energy` AS giveEnergy,
+        ps.`spc_free` AS spcFree,
+        ps.`give_team` AS giveTeam,
+        c.create_date AS createDate
+        FROM shop_cart AS c
+        INNER JOIN pro_style AS ps ON c.styleid = ps.id
+        WHERE c.id in
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
+    </select>
+    <select id="selectShopCartCount" resultType="java.lang.Integer">
+        select count(*) FROM shop_cart AS c
+        INNER JOIN pro_style AS ps ON c.styleid = ps.id WHERE  uid=#{uid}
+    </select>
+
+    <insert id="insert" parameterType="com.platform.entity.ShopCartDO" useGeneratedKeys="true" keyProperty="id">
+		insert into shop_cart(
+			`uid`,
+			`pid`,
+			`pname`,
+			`pro_url`,
+			`styleid`,
+			`description`,
+			`mid`,
+			`merchant_name`,
+			`number`,
+			`type`,
+			`dimensions`,
+			 `create_date`)
+		values(
+			#{uid},
+			#{pid},
+			#{pname},
+			#{proUrl},
+			#{styleid},
+			#{description},
+			#{mid},
+			#{merchantName},
+			#{number},
+			#{type},
+			#{dimensions},
+			now())
+	</insert>
+
+    <update id="updateShopCart">
+        update shop_cart
+        set `number`=#{number}
+        where id = #{cartId}
+    </update>
+
+
+    <delete id="deleteSelect">
+        delete from shop_cart where id in
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="checkShopCart" resultType="com.platform.entity.ShopCartDO">
+        select * from shop_cart where uid=#{uid} and pid=#{pid} and styleid=#{styleid}
+        <if test="dimensions != null and dimensions !=''">
+            and dimensions=#{dimensions}
+        </if>
+    </select>
+
+    <select id="selectProductIds" resultType="java.lang.Integer">
+        SELECT pid FROM shop_cart where id IN
+        <foreach collection="list" item="item" separator="," close=")" open="(">
+            #{item}
+        </foreach>
+
+    </select>
+    <select id="selectProductList" resultType="com.platform.vo.ProductVO">
+        SELECT id,name,type,number FROM t_product_config where id IN
+        <foreach collection="list" item="item" separator="," close=")" open="(">
+            #{item}
+        </foreach>
+        and statu=1
+    </select>
+
+
+</mapper>

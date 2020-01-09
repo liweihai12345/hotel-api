@@ -1,0 +1,14 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /sport
+mybatis:
+  typeAliasesPackage: com.platform.entity
+  mapperLocations: classpath:mapper/*.xml
+
+spring:
+  profiles:
+    active: dev
+
+
+

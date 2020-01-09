@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.platform.mapper.ProductMapper">
+    <resultMap type="com.platform.vo.ProductVO" id="proMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="banners" column="banners"/>
+        <result property="describ" column="describ"/>
+        <result property="type" column="type"/>
+        <result property="typeName" column="type_name"/>
+        <result property="productUrl" column="product_url"/>
+        <result property="price" column="price"/>
+        <result property="spcPrice" column="spc_price"/>
+        <result property="number" column="number"/>
+        <result property="other" column="other"/>
+        <result property="other1" column="other1"/>
+        <result property="other2" column="other2"/>
+        <result property="payWay" column="pay_way"/>
+        <result property="merchantId" column="merchant_id"/>
+        <result property="merchantName" column="merchant_name"/>
+        <result property="sales" column="sales"/>
+        <result property="giveEnergy" column="give_energy"/>
+        <result property="spcFree" column="spc_free"/>
+        <result property="giveTeam" column="give_team"/>
+        <result property="rate" column="rate"/>
+    </resultMap>
+
+
+    <select id="queryProductById" resultMap="proMap">
+		SELECT * FROM  t_product_config where id=#{id} and statu=1
+	</select>
+
+
+    <select id="selectProductList" resultType="com.platform.vo.ProductListVO">
+        SELECT id,
+        name,
+        price,
+        spc_price AS spcPrice,
+        old_price AS oldPrice,
+        describ,
+        image,
+        `number`,
+        `rate`,
+        other,
+        other1,
+        create_date AS createDate
+        FROM t_product_config where statu=1
+        and type=#{type}
+        <if test="sort != null and sort == 1 ">
+            order by sort desc
+        </if>
+        <if test="sort != null and sort == 2 ">
+            order by sales desc
+        </if>
+        <if test="sort != null and sort == 3 ">
+            order by create_date desc
+        </if>
+        <if test="sort != null and sort == 4 ">
+            order by price desc
+        </if>
+        limit #{start},#{size}
+    </select>
+
+
+    <select id="selectHomePro" resultType="com.platform.vo.ProductListVO">
+        SELECT p.id,p.name,
+        p.price,
+        p.spc_price AS spcPrice,
+        p.old_price AS oldPrice,
+        p.describ,
+        p.image,
+        p.`number`,
+        p.`rate`,
+        p.other,
+        p.other1,
+        p.other2,
+        p.create_date AS createDate,
+        h.sort,
+        h.title,
+        h.describtion,
+        h.model_name AS modelName
+        FROM t_product_config AS p
+        INNER JOIN home_config AS h ON p.id=h.bussnessid
+        where p.id in
+        <foreach collection="bids" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+        and p.statu=1 and h.type=#{htype}
+        order by h.sort
+    </select>
+    <select id="selectProductWay" resultType="java.lang.String">
+        SELECT pay_way FROM  t_product_config where  id=#{pid} and statu=1
+    </select>
+
+    <select id="searchProduct" resultType="com.platform.vo.ProductListVO">
+        SELECT id,name,
+        price,
+        spc_price AS spcPrice,
+        old_price AS  oldPrice,
+        describ,
+        image,
+        `number`,
+        `rate`,
+        other,
+        other1,
+        create_date AS createDate FROM  t_product_config where type=1 and statu=1
+        and `name` LIKE concat('%',#{pname},'%')
+        limit #{start},#{size}
+    </select>
+    <!--分类产品列表-->
+    <select id="selectCateProductList" resultType="com.platform.vo.ProductListVO">
+        SELECT id,name,
+        price,
+        spc_price AS spcPrice,
+        old_price AS oldPrice,
+        describ,
+        image,
+        `number`,
+        `rate`,
+        other,other1,create_date AS createDate
+        FROM t_product_config AS p INNER JOIN product_cate_mapping AS pm
+        ON p.id=pm.product_id where p.statu=1
+        <if test="cate1 != null">
+            and pm.cate_parent_id=#{cate1}
+        </if>
+        <if test="cate2 != null">
+            and pm.cate_id=#{cate2}
+        </if>
+        <if test="sort != null and sort == 1 ">
+            order by sort desc
+        </if>
+        <if test="sort != null and sort == 2 ">
+            order by sales desc
+        </if>
+        <if test="sort != null and sort == 3 ">
+            order by create_date desc
+        </if>
+        <if test="sort != null and sort == 4 ">
+            order by price desc
+        </if>
+        limit #{start},#{size}
+    </select>
+
+
+    <!--分类产品列表数量-->
+    <select id="selectMerchantProCount" resultType="java.lang.Integer">
+        SELECT count(1) FROM t_product_config  where  merchant_id=#{mid} and statu=1
+    </select>
+
+    <select id="selectRecommendProductList" resultType="com.platform.vo.RecommendProductVO">
+        SELECT
+            id AS pid,
+            `name` AS pname,
+            image AS picture,
+            price,
+            spc_price AS spcPrice
+        FROM
+            t_product_config
+        WHERE
+            merchant_id = #{mid} and statu=1
+        order by create_date
+        limit 0,5
+    </select>
+
+    <update id="updateProductSales">
+        UPDATE t_product_config
+        <trim prefix="set">
+            <trim prefix="sales = case" suffix="end">
+                <foreach collection="list" item="item" index="index">
+                    when id=#{item.pid} then sales+#{item.number}
+                </foreach>
+            </trim>
+        </trim>
+        WHERE id IN
+        <foreach collection="list" item="item" separator="," close=")" open="(">
+            #{item.pid}
+        </foreach>
+    </update>
+
+
+</mapper>

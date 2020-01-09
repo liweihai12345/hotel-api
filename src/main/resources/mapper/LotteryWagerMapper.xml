@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.LotteryWagerMapper">
+
+    <resultMap type="com.platform.entity.LotteryWagerDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="name" column="name"/>
+		<result property="imgurl" column="imgurl"/>
+		<result property="phone" column="phone"/>
+        <result property="num" column="num"/>
+        <result property="redBall" column="red_ball"/>
+        <result property="blueBall" column="blue_ball"/>
+        <result property="cost" column="cost"/>
+        <result property="price" column="price"/>
+        <result property="exchange" column="exchange"/>
+        <result property="level" column="level"/>
+        <result property="lotteryName" column="lottery_name"/>
+        <result property="bonus" column="bonus"/>
+        <result property="stages" column="stages"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.platform.entity.LotteryWagerDO">
+		select
+			*
+		from lottery_wager
+		where id = #{id}
+	</select>
+
+	<select id="quermylottery" resultType="com.platform.vo.MyLotteryVO">
+		select
+		case when wa.exchange =1 then lottery_name when  wa.exchange=0 and wi.`status`=0 then '未开奖' when wa.exchange=0 and wi.`status`=1 then '未中奖' ELSE '' end as lotteryname,
+		cost,num,wa.create_date as createDate,wa.red_ball as redball ,wa.price,wa.stages,wa.exchange,IFNULL(wa.bonus,0) as bonus,wi.red_ball as currentstageredball
+		FROM lottery_wager wa  LEFT JOIN  lottery_winning wi on wa.stages = wi.stages and wi.type = #{type}
+		where  uid = #{uid} and wa.type = #{type}
+		order by wa.stages desc ,wa.create_date asc
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+	<select id="querylotterywagerstaticsbystages" resultType="com.platform.vo.LotteryWagerStaticsVO">
+		select
+			 level_name levelname,IFNULL(sum(lottery_wager.num),0) number , IFNULL(lottery.number,0) price
+		from lottery LEFT JOIN lottery_wager on lottery.level = lottery_wager.`level` and lottery_wager.stages = #{stages}
+ 		where lottery.type = #{type}    GROUP BY level_name,lottery.number,lottery.`level`  order by lottery.`level`
+	</select>
+
+	<select id="queryList" resultMap="resultMap">
+		select
+			*
+		FROM lottery_wager
+		WHERE 1=1
+		<if test="uid != null">
+			AND uid = #{uid}
+		</if>
+		<if test="stages != null">
+			AND stages = #{stages}
+		</if>
+		<if test="type != null">
+			AND type = #{type}
+		</if>
+		<if test="exchange != null">
+			AND exchange = #{exchange}
+		</if>
+		<choose>
+			<when test="sidx != null and sidx.trim() != ''">
+				order by ${sidx} ${order}
+			</when>
+			<otherwise>
+				order by id desc
+			</otherwise>
+		</choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+
+	</select>
+
+    <select id="selectList" resultType="com.platform.entity.LotteryDO">
+		select
+    		*
+		FROM lottery
+        WHERE required=1 and `type` =#{type}
+	</select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from lottery_wager
+        WHERE 1=1
+        <if test="uid != null">
+            AND uid = #{uid}
+        </if>
+        <if test="stages != null">
+            AND stages = #{stages}
+        </if>
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        <if test="exchange != null">
+            AND exchange = #{exchange}
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.platform.entity.LotteryWagerDO" useGeneratedKeys="true" keyProperty="id">
+		insert into lottery_wager(
+			`uid`,
+			`phone`,
+			`name`,
+			`imgurl`,
+			`num`,
+			`red_ball`,
+			`blue_ball`,
+			`cost`,
+			`price`,
+			`exchange`,
+			`lottery_name`,
+			`level`,
+			`bonus`,
+			`stages`,
+			`type`,
+			`create_date`)
+		values(
+			#{uid},
+			#{phone},
+			#{name},
+			#{imgurl},
+			#{num},
+			#{redBall},
+			#{blueBall},
+			#{cost},
+			#{price},
+			0,
+			#{lotteryName},
+			#{level},
+			#{bonus},
+			#{stages},
+			#{type},
+			now())
+	</insert>
+
+</mapper>

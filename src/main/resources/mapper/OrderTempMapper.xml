@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.OrderTempMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.OrdernoTempDO" id="resultMap">
+        <result property="tempNo" column="temp_no"/>
+        <result property="ordernoStr" column="orderno_str"/>
+        <result property="isPay" column="is_pay"/>
+        <result property="userId" column="user_id"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+    <select id="selectOrderByNo" resultMap="resultMap">
+        select * from t_orderno_temp where temp_no = #{tempNo}
+    </select>
+
+    <insert id="insertTemp" parameterType="com.platform.entity.OrdernoTempDO">
+        INSERT INTO t_orderno_temp (
+        temp_no,
+        user_id,
+        orderno_str,
+        is_pay,
+        `create_date`
+        )
+        VALUES
+        ( #{tempNo},
+        #{userId},
+        #{ordernoStr},
+        #{isPay},
+        now() )
+    </insert>
+    <update id="updateTempOrder">
+        UPDATE t_orderno_temp SET is_pay=1 where temp_no=#{tempNo}
+    </update>
+</mapper>

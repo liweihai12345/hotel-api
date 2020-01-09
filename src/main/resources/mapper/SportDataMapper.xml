@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.SportDataMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.SportDataDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="name" column="name"/>
+        <result property="distance" column="distance"/>
+        <result property="distanceExtra" column="distance_extra"/>
+        <result property="timeLen" column="time_len"/>
+        <result property="calorie" column="calorie"/>
+        <result property="type" column="type"/>
+        <result property="isDone" column="is_done"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+
+    <select id="selectTodyData" resultMap="resultMap">
+		select * from t_sport_data where uid = #{userId}  and  create_date> #{date}
+	</select>
+
+    <select id="queryList" resultMap="resultMap">
+        select * from t_sport_data
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		select count(*) from t_sport_data
+	</select>
+
+    <insert id="save" parameterType="com.platform.entity.SportExchangeDO" useGeneratedKeys="true" keyProperty="id">
+		insert into t_sport_data
+		(
+			`uid`,
+			`name`,
+			`distance`,
+			`distance_extra`,
+			`time_len`,
+			`calorie`,
+			`type`,
+			`is_done`
+		)
+		values
+		(
+			#{uid},
+			#{name},
+			#{distance},
+			#{distanceExtra},
+			#{timeLen},
+			#{calorie},
+			#{type},
+			#{isDone}
+		)
+	</insert>
+
+
+    <select id="checkSportTimePeriod" resultType="java.lang.Boolean">
+        SELECT  COUNT(1) from t_sport_data  where uid=#{userId} and create_date BETWEEN #{begin} and now()
+    </select>
+
+    <select id="selectTodyActive" resultType="java.lang.Long">
+        SELECT
+        uid
+        FROM
+        t_sport_data
+        WHERE
+        type=#{type}
+        and create_date> #{date}
+        and uid IN
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        GROUP BY uid
+    </select>
+
+    <select id="selectSportRecord" resultType="com.platform.vo.SportData">
+       SELECT  SUM(temp.distance)AS distance,SUM(temp.time_len)AS timeLen,SUM(temp.calorie)AS calorie,createDate
+       FROM( SELECT id,distance,time_len,calorie,DATE_FORMAT(create_date,'%Y-%m-%d') AS  createDate
+			 FROM t_sport_data WHERE uid =#{userId} )AS temp GROUP BY temp.createDate
+        ORDER BY temp.createDate DESC
+        limit #{startIndex},#{size}
+    </select>
+</mapper>

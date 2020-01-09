@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.platform.mapper.PartnerMapper">
+
+    <sql id="select-partner">
+				select id, name, 
+						real_name AS realName, 
+						mobile, 
+						password, 
+						picture_url AS pictureUrl,
+						status,
+						gender, 
+						birth_date AS birthDate,
+						address, 
+						signature ,
+						wx_union_id AS wxUnionId,
+						wb_union_id AS wbUnionId,
+						pay_password AS payPassword,
+						isd_one AS isDone,
+						invite ,
+						device_tokens AS deviceTokens,
+						device_type AS deviceType,
+						danger ,
+						level ,
+						version ,
+						create_time AS createTime
+	</sql>
+
+    <insert id="addPartner" parameterType="com.platform.entity.PartnerDO" useGeneratedKeys="true" keyProperty="id">
+		INSERT into t_partner( name,  mobile ,gender,invite,picture_url,wx_union_id,device_tokens,device_type)
+		VALUES ( #{name}, #{mobile}  ,#{gender},#{invite},#{pictureUrl},#{wxUnionId},#{deviceTokens},#{deviceType})
+	</insert>
+
+    <select id="getPartnerById" resultType="com.platform.entity.PartnerDO">
+        select p.id, name,
+        real_name AS realName,
+        mobile,
+        password,
+        picture_url AS pictureUrl,
+        status,
+        gender,
+        birth_date AS birthDate,
+        address,
+        signature ,
+        wx_union_id AS wxUnionId,
+        wb_union_id AS wbUnionId,
+        pay_password AS payPassword,
+        isd_one AS isDone,
+        invite ,
+        create_time AS createTime,
+        bgimg,
+        device_tokens AS deviceTokens,
+		device_type AS deviceType,
+		danger ,
+		level ,
+		version,
+        0 as iscollect
+        from t_partner as p
+        where p.id=#{id}
+    </select>
+
+    <select id="getPartnerByMobile" resultType="com.platform.entity.PartnerDO">
+        <include refid="select-partner"/>
+        from t_partner where mobile=#{mobile}
+    </select>
+    <select id="getPartnerByWX" resultType="com.platform.entity.PartnerDO">
+        <include refid="select-partner"/>
+        from t_partner where wx_union_id=#{unionId}
+    </select>
+    <select id="queryList" resultType="com.platform.entity.PartnerDO">
+        select id,
+        name,
+        mobile,
+        picture_url AS pictureUrl
+        from t_partner
+        WHERE mobile in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+    <update id="bindwx">
+        update t_partner
+        <set>
+            wx_union_id=#{openid}
+        </set>
+        <where>
+            id=#{id}
+        </where>
+    </update>
+
+    <update id="updateDone">
+        update t_partner
+        <set>
+            isd_one = 1,
+            level = 3,
+            update_time=now()
+        </set>
+        <where>
+            id=#{userId}
+        </where>
+    </update>
+    <update id="updateDeviceToken">
+        update t_partner
+        <set>
+            device_tokens=#{deviceToken},
+            device_type=#{deviceType},
+            update_time=now()
+        </set>
+        <where>
+            id=#{userId}
+        </where>
+    </update>
+
+    <update id="updateParterInfo">
+        update t_partner
+        <set>
+            <if test="name != null">
+                name=#{name},
+            </if>
+            <if test="gender !=null">
+                gender=#{gender},
+            </if>
+            <if test="birthDate !=null">
+                birth_date=#{birthDate},
+            </if>
+            <if test="address !=null">
+                address=#{address},
+            </if>
+            <if test="signature !=null">
+                signature=#{signature}
+            </if>
+        </set>
+        <where>
+            id=#{id}
+        </where>
+    </update>
+
+    <update id="updateMobile">
+        update t_partner SET mobile=#{mobile} where id=#{uid} and mobile=#{oldMobile}
+
+    </update>
+
+
+    <update id="updatePayPassword">
+        update t_partner
+        <set>
+            pay_password=#{pwd}
+        </set>
+        <where>
+            id=#{userId}
+            <if test="old != null and old !=''">
+                and pay_password=#{old}
+            </if>
+
+        </where>
+    </update>
+
+
+    <update id="updatePictureUrl">
+        update t_partner
+        <set>
+            picture_url=#{pictureUrl}
+        </set>
+        <where>
+            id=#{id}
+        </where>
+    </update>
+
+
+    <update id="updateInvite">
+		update t_partner
+		set invite=1
+		where id=#{userId} and invite=0
+	</update>
+    <update id="updateUsername">
+		update t_partner
+		set real_name=#{realName}
+		where id=#{userId}
+	</update>
+    <update id="unBindWX">
+        update t_partner
+        <set>
+            wx_union_id = NULL
+        </set>
+        <where>
+            id=#{id}
+        </where>
+    </update>
+
+    <select id="queryRegCountForDate" resultType="java.lang.Integer">
+
+        SELECT count(id) FROM t_partner WHERE isd_one=#{isDone}
+        <if test="start !=null and end != null">
+            AND create_time BETWEEN DATE_FORMAT(#{start},'%Y-%m-%d') and DATE_FORMAT(#{end},'%Y-%m-%d')
+        </if>
+
+    </select>
+
+    <select id="queryTotalCountForDate" resultType="java.lang.Integer">
+        SELECT count(id) FROM t_partner
+        WHERE 1=1
+        <if test="isDone != null">
+            AND isd_one =#{isDone}
+        </if>
+    </select>
+    <select id="selectLatestReg" resultType="com.platform.vo.UserRegVO">
+        SELECT id AS userId,name AS  userName ,id AS  position FROM t_partner
+        ORDER  BY  create_time DESC
+        limit 5
+    </select>
+    <select id="checkPhone" resultType="java.lang.Boolean">
+        SELECT count(id)  FROM t_partner WHERE  mobile=#{phone}
+    </select>
+    <select id="checkWXID" resultType="java.lang.Boolean">
+        SELECT count(wx_union_id)  FROM t_partner WHERE  wx_union_id=#{unionId}
+    </select>
+
+
+    <update id="updateUserBgImg" parameterType="java.util.Map">
+        update t_partner
+        <set>
+            <if test="picurl != null">
+                bgimg = #{picurl}
+            </if>
+        </set>
+        where id = #{userid}
+    </update>
+    <update id="updateVersion">
+        update t_partner
+        set version = version+1
+        where id = #{userid}
+    </update>
+
+
+    <!--查询用户详细信息  otc用户登录接口  老哥  求别删 (꒦_꒦) -->
+    <select id="queryUserDetailsByPhone" resultType="java.util.Map">
+     SELECT
+        t.id,
+        t.`name`,
+        t.real_name,
+        t.mobile,
+        t.picture_url,
+        t.gender,
+        t.signature,
+        t.address,
+        t.bgimg,
+        0 AS amount,
+        0 AS frozen,
+        a.coin,
+        0 AS coin_frozen,
+        0 AS kilometer,
+        0 AS kilometer_extra,
+        0 AS kilometer_real,
+        isd_one AS isDone,
+        danger ,
+		level ,
+        t.status
+    FROM
+        t_partner as t INNER JOIN t_user_asset AS a
+    ON t.id = a.uid
+    where t.mobile = #{phone} and t.status = 1
+    </select>
+
+
+    <select id="selectUserList" resultType="com.platform.vo.UserVO">
+        select id,
+        name,
+        mobile,
+        picture_url AS pictureUrl,
+        signature
+        from t_partner
+        WHERE
+        <if test="nickName!=null">
+            `name` LIKE concat(#{nickName},'%')
+        </if>
+        order by id asc
+        limit #{start},#{size}
+    </select>
+    <select id="selectUserListForId" resultType="com.platform.entity.PartnerDO">
+        select id,
+        `name`,
+        real_name,
+        mobile,
+        isd_one AS isDone,
+        danger
+        from t_partner where id IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+    <select id="selectUserForLevel" resultType="com.platform.entity.PartnerDO">
+        SELECT
+        id,
+        mobile,
+        isd_one AS isDone,
+        danger ,
+		level ,
+        status  FROM  t_partner where `level`=#{level}
+    </select>
+    <update id="updateUserLevel">
+        UPDATE t_partner
+        SET `level` = #{level}
+        where id IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        and level <![CDATA[<= 3]]>
+    </update>
+</mapper>

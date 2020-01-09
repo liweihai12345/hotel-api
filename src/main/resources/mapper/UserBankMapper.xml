@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.UserBankMapper">
+
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.platform.entity.UserBankDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="phone" column="phone"/>
+        <result property="cardNo" column="card_no"/>
+        <result property="cardBank" column="card_bank"/>
+        <result property="openBank" column="open_bank"/>
+        <result property="realName" column="real_name"/>
+        <result property="idCardNo" column="id_card_no"/>
+        <result property="reservePhone" column="reserve_phone"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+    <insert id="save" parameterType="com.platform.entity.UserBankDO" useGeneratedKeys="true" keyProperty="id">
+		insert into t_user_bank
+		(   `uid`,
+			`phone`,
+			`card_no`,
+			`card_bank`,
+			`open_bank`,
+			`real_name`,
+			`id_card_no`,
+			`reserve_phone`,
+			create_date
+		) values
+			( #{uid},
+				#{phone},
+				#{cardNo},
+				#{cardBank},
+				#{openBank},
+				#{realName},
+				#{idCardNo},
+				#{reservePhone},
+				now()
+			)
+	</insert>
+
+    <select id="queryObject" resultMap="resultMap">
+		select * from t_user_bank where uid = #{userId}
+	</select>
+
+    <select id="selectList" resultType="com.platform.vo.UserBankVO">
+        select
+            id,
+            uid,
+            phone,
+            card_no AS cardNo,
+            card_bank AS cardBank,
+            open_bank AS openBank,
+            create_date AS createDate
+        from t_user_bank where uid = #{userId}
+    </select>
+
+</mapper>

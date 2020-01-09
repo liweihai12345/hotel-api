@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.platform.mapper.MerchantMapper">
+
+    <resultMap type="com.platform.entity.MerchantDO" id="resultMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="phone" column="phone"/>
+        <result property="userId" column="user_id"/>
+        <result property="realname" column="realname"/>
+        <result property="ddPhone" column="dd_phone"/>
+        <result property="idcard" column="idcard"/>
+        <result property="address" column="address"/>
+        <result property="license" column="license"/>
+        <result property="openLicence" column="open_licence"/>
+        <result property="institution" column="institution"/>
+        <result property="value" column="value"/>
+        <result property="value1" column="value1"/>
+        <result property="value2" column="value2"/>
+        <result property="value3" column="value3"/>
+        <result property="value4" column="value4"/>
+        <result property="value5" column="value5"/>
+        <result property="statu" column="statu"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateDate" column="update_date"/>
+    </resultMap>
+
+    <select id="queryObject" resultMap="resultMap">
+		select
+			`id`,
+			`name`,
+			`phone`,
+			`user_id`,
+			`realname`,
+			`dd_phone`,
+			`idcard`,
+			`address`,
+			`license`,
+			`open_licence`,
+			`institution`,
+			`value`,
+			`value1`,
+			`value2`,
+			`value3`,
+			`value4`,
+			`value5`,
+			`statu`,
+			`create_date`,
+			`update_date`
+		from merchant
+		where id = #{id}
+	</select>
+
+    <select id="check" resultType="java.lang.Long">
+		select count(1) from merchant
+		where user_id = #{userId}
+	</select>
+    <insert id="save" parameterType="com.platform.entity.MerchantDO">
+		INSERT INTO merchant (
+			`name`,
+			`phone`,
+			`user_id`,
+			`realname`,
+			`dd_phone`,
+			`idcard`,
+			`address`,
+			`license`,
+			`open_licence`,
+			`institution`,
+			`value`,
+			`value1`,
+			`statu`,
+			`create_date`,
+			`update_date`
+		)
+		VALUES
+			(#{name},
+			#{phone},
+			#{userId},
+			#{realname},
+			#{ddPhone},
+			#{idcard},
+			#{address},
+			#{license},
+			#{openLicence},
+			#{institution},
+			#{value},
+			#{value1},
+			0,
+			now(),
+			now())
+	</insert>
+
+    <select id="selectMerchantInfo" resultType="com.platform.entity.MerchantInfoDO">
+        select
+        `mid`,
+        user_id AS userId,
+        `name`,
+        `logo`,
+        `institution`,
+        editing,
+        product_num AS  productNum,
+        funs
+        from merchant_info
+        where mid = #{mid}
+    </select>
+
+    <select id="selectStoreCateByMid" resultType="com.platform.vo.ProductCateVO">
+		  SELECT
+		  pc.id,
+		  pc.`name`,
+		  pc.parent_id  as parentId,
+		  pc.image_url  as imageUrl,
+		  pc.sort_order  AS sortOrder,
+		  pc.rate
+		  from product_cate_mapping AS pcm
+		  INNER JOIN pro_category AS pc ON pcm.cate_id=pc.id
+          where product_id IN(SELECT id from t_product_config where merchant_id=#{merchantId})
+		  ORDER BY pc.id,pc.sort_order
+	</select>
+
+    <select id="checkFocus" resultType="java.lang.Boolean">
+		select count(1)
+		from merchant_focus
+		where user_id = #{userId} and merchant_id = #{merchantId}
+	</select>
+    <insert id="addFocus">
+		INSERT INTO merchant_focus (
+			`user_id`,
+			`merchant_id`,
+			`create_date`
+		)
+		VALUES
+			(
+			#{userId},
+			#{merchantId},
+			now())
+	</insert>
+    <delete id="deleteFocus">
+		delete from merchant_focus  where user_id = #{userId} and merchant_id = #{merchantId}
+	</delete>
+    <select id="selectStoreFocusList" resultType="com.platform.vo.RecommendStoreVO">
+		 SELECT
+			mid,
+			name AS mname,
+			logo,
+			product_num AS proNum,
+			funs
+		 FROM
+			merchant_focus AS mf
+			INNER JOIN merchant_info mi ON mf.merchant_id = mi.mid
+		 WHERE
+		    mf.user_id = #{userId}
+		 order by mi.funs desc
+		 limit #{start} , #{size}
+	</select>
+    <update id="updateMerchantAccount">
+        UPDATE merchant_info
+        SET
+        amount = amount+#{mamount},
+        version=version+1
+        WHERE mid =#{merchantId}
+    </update>
+
+    <insert id="insertMerchantAccountRecord">
+                INSERT INTO merchant_account_record (
+                    `trade_no`,
+                    `mid`,
+                    `account`,
+                    `rate_value`,
+                    `create_date`
+                    )
+                    VALUES
+                    (
+                    #{orderNo},
+                    #{mid},
+                    #{maccount},
+                    #{rateValue},
+                    now())
+    </insert>
+
+</mapper>
