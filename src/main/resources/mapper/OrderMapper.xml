@@ -179,7 +179,7 @@
     </select>
 
 
-    <select id="selectOrderList" resultType="com.platform.vo.OrderListVO">
+    <select id="selectOrderList" resultType="com.platform.vo.FinanceOrderListVO">
         SELECT
         id,
         order_no AS orderNo,

@@ -39,7 +39,7 @@ public interface OrderMapper extends BaseDao<OrderDO> {
 
     List<OrderDO> selectOrderByNos(@Param("list") List<String> list);
 
-    List<OrderListVO> selectOrderList(@Param("userId") Long userId, @Param("statu") Integer status, @Param("start") Integer start, @Param("size") Integer size);
+    List<FinanceOrderListVO> selectOrderList(@Param("userId") Long userId, @Param("statu") Integer status, @Param("start") Integer start, @Param("size") Integer size);
 
     OrderDetailVO selectOrder(@Param("orderNo") String orderNo);
 

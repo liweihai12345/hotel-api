@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 /**
  * @program:
- * @Description:运动详情页
+ * @Description:维护基金 柱状图
  * @Author: liweihai
  * @Date: Created in 2019/1/20 20:18
  */
@@ -17,19 +17,9 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserAssetVO implements Serializable {
+public class MaintenancePrismaticVO implements Serializable {
 
     private static final long serialVersionUID = -6106014513801528881L;
 
-    //    private BigDecimal amount;
-//    private BigDecimal frozen;
-    private String coin;
-    private String coinFrozen;
-    private String coinIncome;
-    private String spcCoinFrozen;
-    private String spcCoin;
-    private String spcIncome;
-    private String backRate;
-
-
+    private int i;
 }

@@ -143,7 +143,28 @@ public class HomeService {
         return null;
     }
 
-    public List<OrderListVO> selectHomeFinanceOrder(String month_date) {
+    public List<FinanceOrderListVO> selectHomeFinanceOrder(String month_date) {
+        return null;
+    }
+
+    public GrossProfitVO selectHomeGrossProfit() {
+        return null;
+    }
+
+    public List<GrossProfitListVO> selectHomeGrossProfitList(String start, String end) {
+        return null;
+    }
+
+    public NetIncomeVO selectHomeNetIncome(String month_date) {
+
+        return null;
+    }
+
+    public MaintenanceVO selectHomeMaintenance() {
+        return null;
+    }
+
+    public List<MaintenanceListVO> selectHomeMaintenanceList(String start, String end) {
         return null;
     }
 }

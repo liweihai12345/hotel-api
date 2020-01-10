@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderListVO implements Serializable {
+public class FinanceOrderListVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
 
